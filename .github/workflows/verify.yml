@@ -1,0 +1,78 @@
+name: Integration verification
+
+# Checks out ApplyPilot and the three source repositories at the exact
+# commits in sources.lock.json, then runs npm run verify:integration.
+# KenilJobBoard is private: add a repository secret SOURCES_TOKEN (a
+# fine-grained token with read access to KenilGopani/KenilJobBoard).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ApplyPilot
+          persist-credentials: false
+
+      - name: Read pinned source commits
+        id: pins
+        working-directory: ApplyPilot
+        run: |
+          echo "jobspy=$(jq -r '.sources.JobSpy.commit' sources.lock.json)" >> "$GITHUB_OUTPUT"
+          echo "careerops=$(jq -r '.sources["career-ops"].commit' sources.lock.json)" >> "$GITHUB_OUTPUT"
+          echo "rolecraft=$(jq -r '.sources.KenilJobBoard.commit' sources.lock.json)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: speedyapply/JobSpy
+          ref: ${{ steps.pins.outputs.jobspy }}
+          path: JobSpy
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: career-ops-hq/career-ops
+          ref: ${{ steps.pins.outputs.careerops }}
+          path: career-ops
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KenilGopani/KenilJobBoard
+          ref: ${{ steps.pins.outputs.rolecraft }}
+          path: KenilJobBoard
+          token: ${{ secrets.SOURCES_TOKEN }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.13"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install JobSpy (editable) for the worker
+        run: |
+          python -m venv ApplyPilot/runtime/.venv-jobspy
+          ApplyPilot/runtime/.venv-jobspy/bin/pip install -e JobSpy
+      - name: Install Career Ops (no browser download)
+        working-directory: career-ops
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci --no-audit --no-fund
+      - name: Install Rolecraft
+        working-directory: KenilJobBoard
+        run: npm ci --no-audit --no-fund
+      - name: Install ApplyPilot
+        working-directory: ApplyPilot
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify integration
+        working-directory: ApplyPilot
+        run: npm run verify:integration
