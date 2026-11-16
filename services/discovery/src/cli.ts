@@ -115,15 +115,26 @@ async function main(): Promise<number> {
     saved.push({ result: outcome.result, path });
     if (outcome.result.status === "failed" && exit === 0) exit = 2;
   }
+  for (const outcome of merged.outcomes) {
+    for (const m of outcome.merges ?? []) {
+      const job = outcome.result?.jobs.find((j) => j.id === m.into);
+      console.log(`  same posting (${m.by}): ${job?.company} — ${job?.title} [${job?.provenance.map((p) => p.site).join(" + ")}]`);
+    }
+  }
   if (merged.outcomes.length > 1) {
-    console.log(`merged: ${merged.jobs.length} distinct jobs across sources`);
+    console.log(`merged: ${merged.jobs.length} distinct jobs across sources (${merged.crossSourceMerges.length} found by both)`);
+  }
+  if (merged.possibleDuplicates.length) {
+    console.log(`${merged.possibleDuplicates.length} possible duplicates (same company and title, different or no city) were left separate`);
   }
 
   if (values.push) {
     for (const { result, path } of saved) {
       try {
         const pushed = await pushDiscovery(runInfo(result), result.jobs, { baseUrl: values["rolecraft-url"] });
-        console.log(`Rolecraft (${result.adapter}): ${pushed.created} new, ${pushed.updated} already in the inbox`);
+        console.log(
+          `Rolecraft (${result.adapter}): ${pushed.created} new, ${pushed.updated} already in the inbox, ${pushed.merged} merged into jobs found by another source`,
+        );
       } catch (error) {
         if (!(error instanceof RolecraftError)) throw error;
         console.error(`Rolecraft import of ${result.adapter} failed: ${error.message}`);

@@ -51,7 +51,7 @@ test("jobs are sent in batches with the local sign-in cookie and a same-origin h
   try {
     const jobs = Array.from({ length: 120 }, (_, i) => job(i));
     const result = await pushDiscovery(run, jobs, { baseUrl: rc.url, batchSize: 50 });
-    assert.deepEqual(result, { received: 120, created: 120, updated: 0, batches: 3 });
+    assert.deepEqual(result, { received: 120, created: 120, updated: 0, merged: 0, batches: 3 });
     assert.deepEqual(rc.seen.map((s) => s.body.jobs.length), [50, 50, 20]);
     assert.equal(rc.seen[0]?.headers.cookie, "__sites_local_auth=1");
     assert.equal(rc.seen[0]?.headers.origin, rc.url);

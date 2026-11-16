@@ -23,6 +23,8 @@ export interface PushResult {
   received: number;
   created: number;
   updated: number;
+  /** Jobs Rolecraft merged into a job it already held (same posting, another source). */
+  merged: number;
   batches: number;
 }
 
@@ -87,7 +89,7 @@ export async function pushDiscovery(
     }
   });
 
-  const total: PushResult = { received: 0, created: 0, updated: 0, batches: 0 };
+  const total: PushResult = { received: 0, created: 0, updated: 0, merged: 0, batches: 0 };
   const endpoint = new URL("/api/discovered-jobs", base);
   // An empty run is still sent once, so Rolecraft records that it happened.
   const batches: CanonicalJob[][] = [];
@@ -116,6 +118,7 @@ export async function pushDiscovery(
       received?: number;
       created?: number;
       updated?: number;
+      merged?: number;
       error?: string;
       issues?: string[];
     };
@@ -130,6 +133,7 @@ export async function pushDiscovery(
     total.received += body.received ?? 0;
     total.created += body.created ?? 0;
     total.updated += body.updated ?? 0;
+    total.merged += body.merged ?? 0;
     total.batches += 1;
   }
   return total;

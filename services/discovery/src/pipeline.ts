@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CanonicalJob, DiscoveryResult } from "@applypilot/job-schema";
+import { dedupeJobs, type Merge, type PossibleDuplicate } from "@applypilot/dedup";
 import { runJobSpyDiscovery, type JobSpyDiscoveryRequest } from "@applypilot/adapter-jobspy";
 import { discoverPortalJobs } from "@applypilot/adapter-career-ops";
 
@@ -20,17 +21,34 @@ export interface DiscoveryRequest {
 
 export interface SourceOutcome {
   source: DiscoverySource;
-  /** Present when the source ran; absent when it threw. */
+  /** Present when the source ran; absent when it threw. Jobs are deduplicated and carry dedupKeys. */
   result?: DiscoveryResult;
+  /** Copies of one posting merged inside this run (e.g. LinkedIn + Indeed). */
+  merges?: Merge[];
   error?: string;
 }
 
 export interface MergedDiscovery {
   outcomes: SourceOutcome[];
-  /** Every canonical job across sources, one entry per id. */
+  /** One canonical job per real posting across all sources. */
   jobs: CanonicalJob[];
-  /** Jobs present in more than one source with the same id (cross-source dedup is Phase 10). */
-  sameIdAcrossSources: number;
+  /** Postings found by more than one source in this discovery, merged. */
+  crossSourceMerges: Merge[];
+  /** Same company and title but not enough evidence to merge: reported only. */
+  possibleDuplicates: PossibleDuplicate[];
+}
+
+/**
+ * Deduplicate one run's jobs and attach identity keys. Rolecraft uses the
+ * keys to merge these jobs with ones it already holds from earlier runs.
+ */
+export function withDedup(result: DiscoveryResult): { result: DiscoveryResult; merges: Merge[] } {
+  const { jobs, merges } = dedupeJobs(result.jobs);
+  const folded = merges.reduce((n, m) => n + m.from.length, 0);
+  return {
+    result: { ...result, jobs, metrics: { ...result.metrics, duplicates: result.metrics.duplicates + folded } },
+    merges,
+  };
 }
 
 /** The run summary Rolecraft stores with an import. */
@@ -63,10 +81,10 @@ export async function runDiscovery(request: DiscoveryRequest): Promise<MergedDis
         const result = await runJobSpyDiscovery(request.jobspy, {
           onLog: (l) => request.onLog?.("jobspy", l),
         });
-        return { source, result };
+        return { source, ...withDedup(result) };
       }
       const result = await discoverPortalJobs(request.careerOps ?? {});
-      return { source, result };
+      return { source, ...withDedup(result) };
     } catch (error) {
       const code = (error as { code?: unknown }).code;
       const message = error instanceof Error ? error.message : String(error);
@@ -77,22 +95,11 @@ export async function runDiscovery(request: DiscoveryRequest): Promise<MergedDis
   return { outcomes, ...mergeJobs(outcomes) };
 }
 
-export function mergeJobs(outcomes: SourceOutcome[]): Pick<MergedDiscovery, "jobs" | "sameIdAcrossSources"> {
-  const byId = new Map<string, CanonicalJob>();
-  let sameIdAcrossSources = 0;
-  for (const { result } of outcomes) {
-    for (const job of result?.jobs ?? []) {
-      const existing = byId.get(job.id);
-      if (!existing) {
-        byId.set(job.id, job);
-        continue;
-      }
-      sameIdAcrossSources += 1;
-      // Keep both sightings; provenance is never discarded.
-      byId.set(job.id, { ...existing, provenance: [...existing.provenance, ...job.provenance] });
-    }
-  }
-  return { jobs: [...byId.values()], sameIdAcrossSources };
+export function mergeJobs(
+  outcomes: SourceOutcome[],
+): Pick<MergedDiscovery, "jobs" | "crossSourceMerges" | "possibleDuplicates"> {
+  const { jobs, merges, possibleDuplicates } = dedupeJobs(outcomes.flatMap((o) => o.result?.jobs ?? []));
+  return { jobs, crossSourceMerges: merges, possibleDuplicates };
 }
 
 /** Save one source's run to runtime/discovery/<runId>.json and return the path. */
