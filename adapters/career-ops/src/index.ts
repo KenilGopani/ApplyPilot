@@ -4,3 +4,4 @@ export * from "./data-root.ts";
 export * from "./operations.ts";
 export * from "./portal-jobs.ts";
 export * from "./job-description.ts";
+export * from "./profile-sync.ts";

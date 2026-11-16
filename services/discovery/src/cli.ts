@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import type { DiscoveryResult } from "@applypilot/job-schema";
 import { DEFAULT_ROLECRAFT_URL, RolecraftError, pushDiscovery } from "@applypilot/rolecraft-client";
+import { ProfileError, loadCandidateProfile, toFilterPolicy } from "@applypilot/candidate-profile";
 import { discoverySources, runDiscovery, runInfo, saveRun, type DiscoverySource } from "./pipeline.ts";
 
 export { runInfo };
@@ -28,6 +29,7 @@ const USAGE = `Usage: npm run discover -- [search term] [options]
   --since <days>         only postings from the last N days
 
   --push                 import the jobs into Rolecraft's Discovered inbox
+  --no-screen            skip the hard filters (they run whenever runtime/candidate-profile.json exists)
   --rolecraft-url <url>  local Rolecraft (default ${DEFAULT_ROLECRAFT_URL})
 
 Each source's run is saved to runtime/discovery/<run id>.json.
@@ -63,6 +65,7 @@ async function main(): Promise<number> {
       company: { type: "string" },
       since: { type: "string" },
       push: { type: "boolean", default: false },
+      "no-screen": { type: "boolean", default: false },
       "rolecraft-url": { type: "string", default: DEFAULT_ROLECRAFT_URL },
       help: { type: "boolean", short: "h", default: false },
     },
@@ -94,9 +97,20 @@ async function main(): Promise<number> {
       }
     : undefined;
 
+  let screening: { policy: ReturnType<typeof toFilterPolicy> } | undefined;
+  if (!values["no-screen"]) {
+    try {
+      screening = { policy: toFilterPolicy(loadCandidateProfile()) };
+    } catch (error) {
+      if (!(error instanceof ProfileError)) throw error;
+      console.error(`Hard filters off: ${error.message}`);
+    }
+  }
+
   const merged = await runDiscovery({
     sources: sources as DiscoverySource[],
     jobspy,
+    screening,
     careerOps: { company: values.company, sinceDays: values.since ? Number(values.since) : undefined },
     onLog: (source, line) => console.error(`  [${source}] ${line}`),
   });
@@ -112,6 +126,13 @@ async function main(): Promise<number> {
     const extra = outcome.source === "jobspy" ? { request: { ...jobspy, proxies: undefined } } : {};
     const path = saveRun(outcome.result, extra);
     printResult(outcome.result, path);
+    if (outcome.screening) {
+      const s = outcome.screening;
+      console.log(
+        `  screened: ${s.verdicts.pass} pass, ${s.verdicts.review} review, ${s.verdicts.reject} filtered out` +
+          ` (descriptions fetched ${s.descriptionsFetched}, unavailable ${s.descriptionsUnavailable}, closed ${s.closed})`,
+      );
+    }
     saved.push({ result: outcome.result, path });
     if (outcome.result.status === "failed" && exit === 0) exit = 2;
   }

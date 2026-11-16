@@ -10,7 +10,8 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { DEFAULT_ROLECRAFT_URL, RolecraftError, pushDiscovery } from "@applypilot/rolecraft-client";
 import type { DiscoveryResult } from "@applypilot/job-schema";
-import { runInfo, withDedup } from "./pipeline.ts";
+import { ProfileError, loadCandidateProfile, toFilterPolicy } from "@applypilot/candidate-profile";
+import { runInfo, screenJobs, withDedup } from "./pipeline.ts";
 
 const runsDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../runtime/discovery");
 
@@ -18,6 +19,7 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     all: { type: "boolean", default: false },
+    "no-screen": { type: "boolean", default: false },
     "rolecraft-url": { type: "string", default: DEFAULT_ROLECRAFT_URL },
   },
 });
@@ -39,8 +41,27 @@ const files = values.all
 // Oldest first, so the earliest stored copy of a posting stays its record.
 const runs = files.map(load).sort((a, b) => a.startedAt.localeCompare(b.startedAt));
 
+// Saved runs are screened with the current profile, so older jobs get the
+// same hard filters as new ones.
+let policy: ReturnType<typeof toFilterPolicy> | undefined;
+if (!values["no-screen"]) {
+  try {
+    policy = toFilterPolicy(loadCandidateProfile());
+  } catch (error) {
+    if (!(error instanceof ProfileError)) throw error;
+    console.error(`Hard filters off: ${error.message}`);
+  }
+}
+
 let failed = false;
-for (const result of runs) {
+for (const loaded of runs) {
+  let result = loaded;
+  if (policy) {
+    const screened = await screenJobs(loaded.jobs, { policy });
+    result = { ...loaded, jobs: screened.jobs };
+    const v = screened.summary.verdicts;
+    console.log(`${loaded.runId}: screened ${v.pass} pass, ${v.review} review, ${v.reject} filtered out`);
+  }
   try {
     const p = await pushDiscovery(runInfo(result), result.jobs, { baseUrl: values["rolecraft-url"] });
     console.log(
