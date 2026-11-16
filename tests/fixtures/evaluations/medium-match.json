@@ -1,0 +1,45 @@
+{
+  "jobId": "job_00000000000000aa",
+  "evaluator": "career-ops",
+  "evaluatorVersion": "fixture",
+  "evaluatedAt": "2026-11-16T12:00:00.000Z",
+  "score": 3.6,
+  "scoreScale": {
+    "min": 1,
+    "max": 5
+  },
+  "decision": "review",
+  "confidence": 0.6,
+  "matched": [
+    {
+      "requirement": {
+        "id": "r1",
+        "text": "Python APIs",
+        "importance": "critical"
+      },
+      "evidence": [
+        {
+          "requirementId": "r1",
+          "origin": "resume",
+          "document": "applied-ai.md",
+          "excerpt": "Python, FastAPI, PostgreSQL"
+        }
+      ]
+    }
+  ],
+  "missing": [
+    {
+      "id": "m1",
+      "text": "Kubernetes in production",
+      "importance": "meaningful"
+    },
+    {
+      "id": "m2",
+      "text": "On-call experience",
+      "importance": "meaningful"
+    }
+  ],
+  "workAuthorization": "unknown",
+  "roleClassification": "Applied AI / LLM Engineer",
+  "explanation": "Fixture: review."
+}

@@ -1,0 +1,29 @@
+{
+  "jobId": "job_00000000000000aa",
+  "evaluator": "career-ops",
+  "evaluatorVersion": "fixture",
+  "evaluatedAt": "2026-11-16T12:00:00.000Z",
+  "score": 1.8,
+  "scoreScale": {
+    "min": 1,
+    "max": 5
+  },
+  "decision": "skip",
+  "confidence": 0.85,
+  "matched": [],
+  "missing": [
+    {
+      "id": "m1",
+      "text": "8+ years of experience",
+      "importance": "meaningful"
+    },
+    {
+      "id": "m2",
+      "text": "Active Secret clearance",
+      "importance": "meaningful"
+    }
+  ],
+  "workAuthorization": "incompatible",
+  "roleClassification": "Applied AI / LLM Engineer",
+  "explanation": "Fixture: skip."
+}

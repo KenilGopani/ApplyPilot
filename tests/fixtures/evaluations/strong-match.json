@@ -1,0 +1,49 @@
+{
+  "jobId": "job_00000000000000aa",
+  "evaluator": "career-ops",
+  "evaluatorVersion": "fixture",
+  "evaluatedAt": "2026-11-16T12:00:00.000Z",
+  "score": 4.5,
+  "scoreScale": {
+    "min": 1,
+    "max": 5
+  },
+  "decision": "apply",
+  "confidence": 0.85,
+  "matched": [
+    {
+      "requirement": {
+        "id": "r1",
+        "text": "Production RAG",
+        "importance": "critical"
+      },
+      "evidence": [
+        {
+          "requirementId": "r1",
+          "origin": "resume",
+          "document": "applied-ai.md",
+          "excerpt": "Built a RAG pipeline with pgvector that improved Recall@5 from 70% to 88%."
+        }
+      ]
+    },
+    {
+      "requirement": {
+        "id": "r2",
+        "text": "Agents",
+        "importance": "high"
+      },
+      "evidence": [
+        {
+          "requirementId": "r2",
+          "origin": "resume",
+          "document": "applied-ai.md",
+          "excerpt": "Built tool-calling agents with LangGraph and an evaluation suite of 100 cases."
+        }
+      ]
+    }
+  ],
+  "missing": [],
+  "workAuthorization": "unknown",
+  "roleClassification": "Applied AI / LLM Engineer",
+  "explanation": "Fixture: apply."
+}
