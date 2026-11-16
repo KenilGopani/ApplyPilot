@@ -1,0 +1,10 @@
+{
+  "name": "@applypilot/logging",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Structured JSON-lines logs with run metrics; personal data and secrets are redacted.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
