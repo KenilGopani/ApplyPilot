@@ -1,0 +1,14 @@
+{
+  "name": "@applypilot/adapter-jobspy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runs the JobSpy worker and translates its records into CanonicalJob.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@applypilot/job-schema": "0.1.0",
+    "zod": "3.25.76"
+  }
+}
