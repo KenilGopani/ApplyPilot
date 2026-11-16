@@ -21,7 +21,8 @@
     "setup:jobspy": "node scripts/setup-jobspy.mjs",
     "discover": "node --experimental-strip-types services/discovery/src/cli.ts",
     "test:integration": "node --experimental-strip-types --test \"tests/integration/*.test.ts\"",
-    "push": "node --experimental-strip-types services/discovery/src/push.ts"
+    "push": "node --experimental-strip-types services/discovery/src/push.ts",
+    "career-ops": "node --experimental-strip-types services/discovery/src/career-ops.ts"
   },
   "devDependencies": {
     "@types/node": "22.19.19",
