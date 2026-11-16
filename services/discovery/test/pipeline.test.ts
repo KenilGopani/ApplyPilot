@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mapJobSpyEnvelope, type JobSpyEnvelope } from "@applypilot/adapter-jobspy";
 import { mapPortalScan, scanReceiptSchema } from "@applypilot/adapter-career-ops";
-import { mergeJobs, runDiscovery, runInfo, withDedup } from "../src/pipeline.ts";
+import { mergeJobs, runDiscovery, runInfo, screenJobs, withDedup } from "../src/pipeline.ts";
 
 const fixtures = resolve(dirname(fileURLToPath(import.meta.url)), "../../../tests/fixtures");
 const at = "2026-11-15T12:00:00.000Z";
@@ -82,4 +82,40 @@ test("each run is reported to Rolecraft under its own adapter", () => {
   assert.equal(co.adapter, "career-ops");
   assert.equal(co.status, "partial");
   assert.equal(co.metrics.requestedPerSite, null);
+});
+
+test("screening fetches missing descriptions, rejects closed postings with evidence, and counts verdicts", async () => {
+  const co = careerOpsResult();
+  const fetched: string[] = [];
+  const { jobs, summary } = await screenJobs(co.jobs, {
+    policy: {
+      countries: ["United States"],
+      excludedTitleKeywords: ["Staff", "Principal"],
+      reviewTitleKeywords: ["Senior"],
+      roleFamilyKeywords: ["Engineer"],
+      maxRequiredYears: 4,
+      reviewRequiredYears: 2,
+      needsSponsorship: true,
+      excludedCompanies: [],
+      excludedKeywords: [],
+    },
+    now: new Date("2026-11-16T00:00:00Z"),
+    fetcher: async (url) => {
+      fetched.push(url);
+      if (url.includes("lever")) return { status: "closed", evidence: "No longer accepting applications" };
+      if (url.includes("ashby")) return { status: "found", text: "We are not able to sponsor visas." };
+      return { status: "unavailable" };
+    },
+  });
+  assert.equal(fetched.length, co.jobs.length, "every job without a description was fetched");
+  const lever = jobs.find((j) => j.source === "lever")!;
+  assert.equal(lever.screening?.verdict, "reject");
+  assert.equal(lever.screening?.checks[0]?.rule, "posting-closed");
+  assert.equal(lever.screening?.checks[0]?.evidence, "No longer accepting applications");
+  const ashby = jobs.find((j) => j.source === "ashby")!;
+  assert.equal(ashby.description, "We are not able to sponsor visas.");
+  assert.equal(ashby.screening?.authorization, "incompatible");
+  assert.equal(summary.closed, 1);
+  assert.equal(summary.descriptionsFetched, 1);
+  assert.equal(summary.verdicts.pass + summary.verdicts.review + summary.verdicts.reject, jobs.length);
 });

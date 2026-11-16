@@ -25,6 +25,7 @@ export const exposedScripts = {
   "doctor.mjs": "read-only health and onboarding state (--json)",
   "verify-pipeline.mjs": "read-only pipeline integrity checks (creates data/ and reports/ if absent)",
   "scan.mjs": "zero-token portal scan with a JSON receipt (--json); --dry-run writes nothing",
+  "fetch-jd.mjs": "read-only job description from the ATS's public API or the page's JSON-LD",
 } as const;
 export type ExposedScript = keyof typeof exposedScripts;
 

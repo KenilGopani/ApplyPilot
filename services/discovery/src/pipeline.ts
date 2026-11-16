@@ -4,7 +4,12 @@ import { fileURLToPath } from "node:url";
 import type { CanonicalJob, DiscoveryResult } from "@applypilot/job-schema";
 import { dedupeJobs, type Merge, type PossibleDuplicate } from "@applypilot/dedup";
 import { runJobSpyDiscovery, type JobSpyDiscoveryRequest } from "@applypilot/adapter-jobspy";
-import { discoverPortalJobs } from "@applypilot/adapter-career-ops";
+import {
+  discoverPortalJobs,
+  fetchJobDescription,
+  type JobDescriptionResult,
+} from "@applypilot/adapter-career-ops";
+import { screenJob, type FilterPolicy } from "@applypilot/filters";
 
 export const discoverySources = ["jobspy", "career-ops"] as const;
 export type DiscoverySource = (typeof discoverySources)[number];
@@ -16,7 +21,90 @@ export interface DiscoveryRequest {
   /** Required when jobspy is a source. */
   jobspy?: JobSpyDiscoveryRequest;
   careerOps?: { company?: string; sinceDays?: number };
+  /** Hard filters (Phase 11). Without it, jobs are imported unscreened. */
+  screening?: ScreeningOptions;
   onLog?: (source: DiscoverySource, line: string) => void;
+}
+
+export interface ScreeningOptions {
+  policy: FilterPolicy;
+  /** Fetch missing descriptions through Career Ops' fetch-jd (zero tokens). Default true. */
+  fetchDescriptions?: boolean;
+  fetcher?: (url: string) => Promise<JobDescriptionResult>;
+  now?: Date;
+}
+
+export interface ScreeningSummary {
+  descriptionsFetched: number;
+  descriptionsUnavailable: number;
+  closed: number;
+  verdicts: Record<"pass" | "review" | "reject", number>;
+}
+
+async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        out[i] = await fn(items[i]!);
+      }
+    }),
+  );
+  return out;
+}
+
+/**
+ * Fill missing descriptions, then run the hard filters. A posting whose page
+ * says it is closed is rejected with that quote as evidence.
+ */
+export async function screenJobs(
+  jobs: CanonicalJob[],
+  options: ScreeningOptions,
+): Promise<{ jobs: CanonicalJob[]; summary: ScreeningSummary }> {
+  const fetcher = options.fetcher ?? ((url: string) => fetchJobDescription(url));
+  const summary: ScreeningSummary = {
+    descriptionsFetched: 0,
+    descriptionsUnavailable: 0,
+    closed: 0,
+    verdicts: { pass: 0, review: 0, reject: 0 },
+  };
+  const enriched = await mapLimit(jobs, 4, async (job) => {
+    if (job.description || options.fetchDescriptions === false) return { job, closed: undefined };
+    // Prefer the employer's posting: it is the URL fetch-jd can read.
+    const url = job.provenance.find((p) => p.applyUrl)?.applyUrl ?? job.sourceUrl;
+    try {
+      const jd = await fetcher(url);
+      if (jd.status === "found") {
+        summary.descriptionsFetched += 1;
+        return { job: { ...job, description: jd.text.slice(0, 200_000) }, closed: undefined };
+      }
+      if (jd.status === "closed") {
+        summary.closed += 1;
+        return { job, closed: jd.evidence };
+      }
+    } catch {
+      // A failed fetch leaves the job unscreened on description-based rules, never dropped.
+    }
+    summary.descriptionsUnavailable += 1;
+    return { job, closed: undefined };
+  });
+  const screened = enriched.map(({ job, closed }) => {
+    const screening = screenJob(job, options.policy, options.now);
+    if (closed !== undefined) {
+      screening.checks.unshift({
+        rule: "posting-closed",
+        status: "incompatible",
+        reason: "The posting says it is closed",
+        ...(closed ? { evidence: closed } : {}),
+      });
+      screening.verdict = "reject";
+    }
+    summary.verdicts[screening.verdict] += 1;
+    return { ...job, screening };
+  });
+  return { jobs: screened, summary };
 }
 
 export interface SourceOutcome {
@@ -25,6 +113,7 @@ export interface SourceOutcome {
   result?: DiscoveryResult;
   /** Copies of one posting merged inside this run (e.g. LinkedIn + Indeed). */
   merges?: Merge[];
+  screening?: ScreeningSummary;
   error?: string;
 }
 
@@ -81,16 +170,24 @@ export async function runDiscovery(request: DiscoveryRequest): Promise<MergedDis
         const result = await runJobSpyDiscovery(request.jobspy, {
           onLog: (l) => request.onLog?.("jobspy", l),
         });
-        return { source, ...withDedup(result) };
+        return screenOutcome(source, withDedup(result));
       }
       const result = await discoverPortalJobs(request.careerOps ?? {});
-      return { source, ...withDedup(result) };
+      return screenOutcome(source, withDedup(result));
     } catch (error) {
       const code = (error as { code?: unknown }).code;
       const message = error instanceof Error ? error.message : String(error);
       return { source, error: typeof code === "string" ? `${code}: ${message}` : message };
     }
   });
+  async function screenOutcome(
+    source: DiscoverySource,
+    deduped: { result: DiscoveryResult; merges: Merge[] },
+  ): Promise<SourceOutcome> {
+    if (!request.screening) return { source, ...deduped };
+    const { jobs, summary } = await screenJobs(deduped.result.jobs, request.screening);
+    return { source, result: { ...deduped.result, jobs }, merges: deduped.merges, screening: summary };
+  }
   const outcomes = await Promise.all(tasks);
   return { outcomes, ...mergeJobs(outcomes) };
 }

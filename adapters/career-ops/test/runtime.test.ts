@@ -12,6 +12,7 @@ import {
   initCareerOpsDataRoot,
   parseVerifyOutput,
   runCareerOps,
+  fetchJobDescription,
   scanPortals,
   verifyCareerOpsPipeline,
   type ExposedScript,
@@ -63,6 +64,15 @@ else {
     errors, unverified_zero: [], partial: [], dry_run: seen.argv.includes("--dry-run"), seen }));
   process.exit(errors.length ? 2 : 0);
 }`,
+);
+
+writeFileSync(
+  join(home, "fetch-jd.mjs"),
+  `${prelude}
+if (mode === "closed") { console.log("CLOSED_POSTING This job is no longer accepting applications"); process.exit(3); }
+if (mode === "miss") process.exit(1);
+if (mode === "crash") process.exit(9);
+console.log("About the role\\n\\nBuild agents. URL=" + seen.argv[0]);`,
 );
 
 const opts = (mode = "ok") => ({ home, dataRoot, env: { FAKE_MODE: mode } });
@@ -170,4 +180,17 @@ test("init creates the user-layer skeleton once and never overwrites", () => {
   assert.equal(readFileSync(join(root, "README.md"), "utf8"), "mine");
   assert.equal(readFileSync(join(root, "cv.md"), "utf8"), "my cv");
   assert.ok(!existsSync(join(root, "portals.yml")), "no personal files are created");
+});
+
+test("job descriptions: found, closed with evidence, unavailable, and crashes are distinct", async () => {
+  const url = "https://boards.greenhouse.io/acme/jobs/1";
+  const found = await fetchJobDescription(url, opts());
+  assert.equal(found.status, "found");
+  assert.match(found.status === "found" ? found.text : "", /Build agents\. URL=https:\/\/boards\.greenhouse\.io\/acme\/jobs\/1/);
+  assert.deepEqual(await fetchJobDescription(url, opts("closed")), {
+    status: "closed",
+    evidence: "This job is no longer accepting applications",
+  });
+  assert.deepEqual(await fetchJobDescription(url, opts("miss")), { status: "unavailable" });
+  await rejectsWith(fetchJobDescription(url, opts("crash")), "CAREER_OPS_PROTOCOL_ERROR");
 });

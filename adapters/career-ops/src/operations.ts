@@ -184,7 +184,8 @@ export type CapabilityState = "available" | "not-exposed";
 export const careerOpsCapabilities: Record<string, { state: CapabilityState; via: string; note: string }> = {
   health: { state: "available", via: "doctor.mjs --json", note: "read-only onboarding/setup state" },
   verify_pipeline: { state: "available", via: "verify-pipeline.mjs", note: "integrity checks over tracker, reports, pipeline" },
-  scan_portals: { state: "available", via: "scan.mjs --json", note: "receipt only; posting mapping is Phase 9" },
+  scan_portals: { state: "available", via: "scan.mjs --json", note: "new postings mapped to CanonicalJob (Phase 9)" },
+  fetch_job_description: { state: "available", via: "fetch-jd.mjs", note: "zero-token JD from ATS APIs / JSON-LD; detects closed postings" },
   evaluate_job: { state: "not-exposed", via: "modes/oferta.md via an AI CLI, or *-eval.mjs", note: "needs an LLM provider decision (risk R3); Phase 13" },
   tailor_resume: { state: "not-exposed", via: "modes/pdf.md, openai-tailor.mjs", note: "needs an LLM; Phase 15" },
   prepare_application: { state: "not-exposed", via: "prepare-application.mjs, modes/apply.md", note: "Phase 18" },
