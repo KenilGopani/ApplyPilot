@@ -15,10 +15,9 @@
     },
     "KenilJobBoard": {
       "url": "git@github.com:KenilGopani/KenilJobBoard.git",
-      "ref": "feat/discovered-jobs",
-      "commit": "309df086a103ac7052411dd9f9416c9efbd503e8",
-      "version": "rolecraft 0.1.0 + discovered jobs inbox",
-      "base": "1fe85851d777ab3450859934ef8e22a269278c64"
+      "ref": "main",
+      "commit": "a321317a572b1ea9ac44992af6877a72a0c51ca5",
+      "version": "rolecraft 0.1.0 + discovered jobs inbox"
     }
   }
 }
