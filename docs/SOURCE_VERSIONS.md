@@ -20,7 +20,7 @@ KenilOwnJobEngine/
 |---|---|---|---|---|
 | JobSpy | `speedyapply/JobSpy` | `main` | `68b88d6909a2342ad75fbb945c4204a3a7ed6665` | python-jobspy 1.4.1 |
 | career-ops | `career-ops-hq/career-ops` | detached at release | `9170fed51af6894753a9f520074529d15e38a004` | 1.40.0 |
-| KenilJobBoard | `KenilGopani/KenilJobBoard` | `feat/discovered-jobs` (based on `main` `1fe8585`) | `cc9ad57c91e7d884e7b682001db02c1f1c5c2957` | rolecraft 0.1.0 + Discovered inbox |
+| KenilJobBoard | `KenilGopani/KenilJobBoard` | `feat/discovered-jobs` (based on `main` `1fe8585`) | `96d513fceec895ec72e7e95137f43578e4a74db3` | rolecraft 0.1.0 + Discovered inbox |
 
 ## Runtime requirements
 
