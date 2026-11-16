@@ -79,6 +79,27 @@ Career Ops runs as child processes of the current Node, from the pinned checkout
 
 A non-dry-run scan makes Career Ops write, in the data root only: `data/pipeline.md` (Pending lines), `data/scan-history.tsv` (one row per posting: `url, first_seen, portal, title, company, status, location, fingerprint, posted_at, …, requisition_id, …`), `data/scan-runs.tsv`, `data/portal-health.tsv` and an HTTP cache. Phase 9 maps the scan-history rows of a run to `CanonicalJob`.
 
+### Career Ops → CanonicalJob (Phase 9)
+
+`discoverPortalJobs()` runs a real scan, then maps exactly the receipt's `added_urls`, each looked up in `scan-history.tsv` (latest `added` row). Cells are unescaped (`'=` → `=`); short legacy rows read missing trailing columns as absent. The column layout is copied in the adapter and checked against the pinned `lib/scan-history-columns.mjs` by the smoke test.
+
+| scan-history | Canonical |
+|---|---|
+| `url` | `sourceUrl`, `id` = hash(source + canonical URL) |
+| URL host | `source`: `greenhouse` / `lever` / `ashby` / `wellfound`, otherwise `company` |
+| `portal` | `provenance.site` (e.g. `greenhouse-api`) |
+| `title`, `company` | required; a row without them is rejected with a reason |
+| `location` | `location`; `remoteType` only when every location part says Remote or Hybrid, else `unknown` |
+| `posted_at` | `postedAt` (YYYY-MM-DD), dropped with a warning otherwise |
+| `requisition_id` | `externalId` |
+| whole row | `rawSource` |
+
+A receipt URL missing from the history is rejected, not skipped. Scans return only postings new to Career Ops' history, so re-running a scan does not resend jobs already in Rolecraft. Descriptions and salary are not in the scan output; they arrive with JD fetching later.
+
+## Merged discovery (Phase 9)
+
+`services/discovery` runs the requested sources independently (one failing never stops the other), saves each run, and pushes each to Rolecraft as its own run (`adapter: jobspy | career-ops`). Jobs are merged by canonical id with provenance concatenated; cross-source matching of different ids is Phase 10.
+
 Not exposed yet (`npm run career-ops -- capabilities`): job evaluation, resume tailoring, application preparation, company and contact research. All of them need an AI CLI or model provider.
 
 ## Rolecraft native format

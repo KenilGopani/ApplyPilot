@@ -34,11 +34,11 @@ PRODUCT              Rolecraft: discovered-jobs inbox, applications, follow-ups
 | `packages/job-schema` | Normalization types | done |
 | `workers/jobspy` | Discovery (Python side) | done |
 | `adapters/jobspy` | Discovery → Normalization | done |
-| `adapters/career-ops` | Runtime: health, pipeline verification, portal scan receipt | done (Phase 8); posting mapping Phase 9, evaluation Phase 13 |
+| `adapters/career-ops` | Runtime (health, verify, scan) and portal postings → CanonicalJob | done (Phases 8–9); evaluation Phase 13 |
 | `packages/dedup`, `packages/filters` | Filtering | Phases 10–11 |
 | `packages/candidate-profile` | Evaluation input | Phase 12 |
 | `packages/rolecraft-client` | Normalization → Product (push to Rolecraft) | done |
-| `services/discovery` | Runs adapters, saves runs, pushes to Rolecraft (`discover`, `push`) | done |
+| `services/discovery` | Runs and merges sources, saves runs, pushes to Rolecraft (`discover --sources`, `push`, `career-ops`) | done |
 | Rolecraft `discovered_jobs` + inbox | Product | done (KenilJobBoard `feat/discovered-jobs`) |
 
 Directories are created when their phase starts rather than scaffolded empty.

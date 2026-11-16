@@ -14,7 +14,7 @@ Each engine runs unmodified behind an adapter that translates its output into on
 |---|---|
 | 1. Baseline: pins, inventories, capability matrix | done |
 | 2. JobSpy → CanonicalJob → Rolecraft | done: discovered jobs land in Rolecraft's Discovered inbox |
-| 3. Multi-source discovery | Career Ops runtime adapter done (health, verify, portal scan); mapping its postings into Rolecraft is next (Phase 9) |
+| 3. Multi-source discovery | JobSpy boards + Career Ops company portals both land in Rolecraft; cross-source dedup next (Phase 10) |
 | 4–6. Dedup, evaluation, workspace, analytics | not started |
 
 ## Setup
@@ -57,6 +57,15 @@ Writes `runtime/discovery/<run id>.json` with canonical jobs, rejected records (
 npm run push -- runtime/discovery/<run id>.json
 ```
 
+Add Career Ops' company-portal scan (Greenhouse, Lever, Ashby, … from `runtime/career-ops-data/portals.yml`) with `--sources`:
+
+```bash
+npm run discover -- "applied ai engineer" --sources jobspy,career-ops --push   # both
+npm run discover -- --sources career-ops --push                               # portals only
+```
+
+Each source is saved and imported as its own run. A portal scan returns only postings it has not seen before.
+
 In the inbox, **Save** or **Applied** adds a job to Opportunities (linked back to its discovered record); **Review**, **Skip** and **Restore** only change its inbox status. Nothing is ever submitted to an employer.
 
 ## Career Ops
@@ -70,7 +79,7 @@ npm run career-ops -- scan --dry-run # preview a scan of the boards in portals.y
 npm run career-ops -- capabilities   # which Career Ops operations ApplyPilot exposes
 ```
 
-A scan needs `portals.yml` in the data folder (Career Ops' format; see its `templates/portals.example.yml`). Its results stay in Career Ops' own files until Phase 9 brings them into Rolecraft.
+A scan needs `cv.md`, `config/profile.yml` and `portals.yml` in the data folder (Career Ops' format). `npm run discover -- --sources career-ops --push` brings its postings into Rolecraft.
 
 ## Layout
 
