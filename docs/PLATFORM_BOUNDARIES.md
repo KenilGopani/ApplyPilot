@@ -34,7 +34,7 @@ PRODUCT              Rolecraft: discovered-jobs inbox, applications, follow-ups
 | `packages/job-schema` | Normalization types | done |
 | `workers/jobspy` | Discovery (Python side) | done |
 | `adapters/jobspy` | Discovery → Normalization | done |
-| `adapters/career-ops` | Discovery + Evaluation | Phase 8 |
+| `adapters/career-ops` | Runtime: health, pipeline verification, portal scan receipt | done (Phase 8); posting mapping Phase 9, evaluation Phase 13 |
 | `packages/dedup`, `packages/filters` | Filtering | Phases 10–11 |
 | `packages/candidate-profile` | Evaluation input | Phase 12 |
 | `packages/rolecraft-client` | Normalization → Product (push to Rolecraft) | done |

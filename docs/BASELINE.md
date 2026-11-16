@@ -38,5 +38,5 @@ Known issue: `scan-verify-api` is timing-sensitive under the parallel runner on 
 |---|---|---|
 | Source pins | `npm run verify:sources` | 3/3 at pinned commits, clean |
 | Typecheck | `npm run typecheck` | pass |
-| TS tests | `npm test` | 28/28 |
+| TS tests | `npm test` | 28/28 at baseline; 40 pass + 1 skipped (Rolecraft integration, needs `ROLECRAFT_URL`) after Phase 8 |
 | Python worker tests | `npm run test:python` | 5/5 |

@@ -67,6 +67,20 @@ The TypeScript side maps these to `PlatformError` codes `DISCOVERY_INVALID_REQUE
 | `reports/{NNN}-{slug}-{date}.md` | Header block + A–H sections | (parser to write, Phase 13) |
 | `data/applications.md` | Markdown tracker table | `tracker-parse.mjs` |
 
+## Career Ops adapter (Phase 8)
+
+Career Ops runs as child processes of the current Node, from the pinned checkout, with `CAREER_OPS_ROOT=runtime/career-ops-data` (override: `APPLYPILOT_CAREER_OPS_DATA`). Every other `CAREER_OPS_*` path redirect inherited from the shell is removed, `CAREER_OPS_NO_ASKS=1` is set, and a data root inside the checkout is refused. Only these scripts are exposed:
+
+| Operation | Native call | Machine format | Mapped to |
+|---|---|---|---|
+| `careerOpsHealth()` | `doctor.mjs --json` (read-only) | one JSON object: `onboardingNeeded, missing[], unpersonalized[], warnings[], plugins[]` | `CareerOpsHealth` |
+| `verifyCareerOpsPipeline()` | `verify-pipeline.mjs --no-hints` | no JSON mode: one `✅`/`⚠️`/`❌` line per finding, exit 1 on errors | `PipelineVerification {ok, errors, warnings, checks[]}` |
+| `scanPortals()` | `scan.mjs --json --quiet [--dry-run] [--company] [--since]` | last stdout line = `careerops.scan.receipt@1`; exit 1 = config error (e.g. no `portals.yml`), exit 2 = a target failed | `PortalScanResult {status: ok\|partial\|failed, receipt}` |
+
+A non-dry-run scan makes Career Ops write, in the data root only: `data/pipeline.md` (Pending lines), `data/scan-history.tsv` (one row per posting: `url, first_seen, portal, title, company, status, location, fingerprint, posted_at, …, requisition_id, …`), `data/scan-runs.tsv`, `data/portal-health.tsv` and an HTTP cache. Phase 9 maps the scan-history rows of a run to `CanonicalJob`.
+
+Not exposed yet (`npm run career-ops -- capabilities`): job evaluation, resume tailoring, application preparation, company and contact research. All of them need an AI CLI or model provider.
+
 ## Rolecraft native format
 
 One workspace JSON per user: `{ jobs: Job[], resume: {name, source}, weeklyGoal }`, Zod-validated, revisioned. See [rolecraft-inventory.md](rolecraft-inventory.md). Workspace jobs saved from the inbox carry `discoveredJobId`.

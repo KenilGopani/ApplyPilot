@@ -14,7 +14,8 @@ Each engine runs unmodified behind an adapter that translates its output into on
 |---|---|
 | 1. Baseline: pins, inventories, capability matrix | done |
 | 2. JobSpy → CanonicalJob → Rolecraft | done: discovered jobs land in Rolecraft's Discovered inbox |
-| 3–6. Career Ops discovery, dedup, evaluation, workspace, analytics | not started |
+| 3. Multi-source discovery | Career Ops runtime adapter done (health, verify, portal scan); mapping its postings into Rolecraft is next (Phase 9) |
+| 4–6. Dedup, evaluation, workspace, analytics | not started |
 
 ## Setup
 
@@ -58,6 +59,19 @@ npm run push -- runtime/discovery/<run id>.json
 
 In the inbox, **Save** or **Applied** adds a job to Opportunities (linked back to its discovered record); **Review**, **Skip** and **Restore** only change its inbox status. Nothing is ever submitted to an employer.
 
+## Career Ops
+
+ApplyPilot runs the pinned Career Ops checkout against its own data folder, `runtime/career-ops-data`, so your Career Ops files never live inside the checkout.
+
+```bash
+npm run career-ops -- init           # create the data folder
+npm run career-ops -- doctor         # what Career Ops still needs (cv.md, profile, portals.yml, …)
+npm run career-ops -- scan --dry-run # preview a scan of the boards in portals.yml
+npm run career-ops -- capabilities   # which Career Ops operations ApplyPilot exposes
+```
+
+A scan needs `portals.yml` in the data folder (Career Ops' format; see its `templates/portals.example.yml`). Its results stay in Career Ops' own files until Phase 9 brings them into Rolecraft.
+
 ## Layout
 
 | Path | Purpose |
@@ -65,8 +79,9 @@ In the inbox, **Save** or **Applied** adds a job to Opportunities (linked back t
 | `packages/job-schema` | `CanonicalJob`, provenance, evaluation and decision schemas (Zod) |
 | `workers/jobspy` | Python worker: calls `jobspy.scrape_jobs()` and emits a JSON envelope |
 | `adapters/jobspy` | Runs the worker and maps JobSpy rows to `CanonicalJob` |
+| `adapters/career-ops` | Runs Career Ops scripts (health, verify, scan) against the isolated data folder |
 | `packages/rolecraft-client` | Pushes canonical jobs to a local Rolecraft in batches (loopback only) |
-| `services/discovery` | The `discover` and `push` commands |
+| `services/discovery` | The `discover`, `push` and `career-ops` commands |
 | `tests/integration` | Fixture jobs → Rolecraft round trip (`ROLECRAFT_URL=http://127.0.0.1:5173 npm run test:integration`) |
 | `tests/fixtures/jobspy` | Fictional rows for every JobSpy board, generated with JobSpy's own serializer |
 | `scripts/` | Setup, source-pin verification |
