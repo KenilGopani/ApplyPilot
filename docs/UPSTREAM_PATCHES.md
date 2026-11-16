@@ -20,3 +20,4 @@ Rolecraft (KenilJobBoard) is the product being built, not a third-party upstream
 | Date | Branch | Change | Tests |
 |---|---|---|---|
 | 2026-11-15 | `feat/discovered-jobs` | `discovered_jobs` / `discovery_runs` tables (migration 0001), discovered-jobs API, Discovered inbox UI, optional `discoveredJobId` on workspace jobs, `allowImportingTsExtensions` in tsconfig | `npm test` 12/12, `npm run test:api` 2/2, typecheck, build; lint unchanged from `main` |
+| 2026-11-16 | `feat/discovered-jobs` | `discovered_job_keys` (migration 0002) and key-based merging on import | `npm test` 14/14, `npm run test:api` 3/3, typecheck, build; lint unchanged |

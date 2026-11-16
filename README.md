@@ -14,8 +14,8 @@ Each engine runs unmodified behind an adapter that translates its output into on
 |---|---|
 | 1. Baseline: pins, inventories, capability matrix | done |
 | 2. JobSpy → CanonicalJob → Rolecraft | done: discovered jobs land in Rolecraft's Discovered inbox |
-| 3. Multi-source discovery | JobSpy boards + Career Ops company portals both land in Rolecraft; cross-source dedup next (Phase 10) |
-| 4–6. Dedup, evaluation, workspace, analytics | not started |
+| 3. Multi-source discovery | done: JobSpy boards + Career Ops company portals land in Rolecraft, deduplicated across sources |
+| 4–6. Hard filters, evaluation, workspace, analytics | not started (Phase 11 next) |
 
 ## Setup
 
@@ -64,7 +64,7 @@ npm run discover -- "applied ai engineer" --sources jobspy,career-ops --push   #
 npm run discover -- --sources career-ops --push                               # portals only
 ```
 
-Each source is saved and imported as its own run. A portal scan returns only postings it has not seen before.
+Each source is saved and imported as its own run. A portal scan returns only postings it has not seen before. The same posting found on several sources becomes one job in Rolecraft (see [docs/DATA_CONTRACTS.md](docs/DATA_CONTRACTS.md#deduplication-phase-10)); `npm run push -- --all` re-sends saved runs so older ones are deduplicated too.
 
 In the inbox, **Save** or **Applied** adds a job to Opportunities (linked back to its discovered record); **Review**, **Skip** and **Restore** only change its inbox status. Nothing is ever submitted to an employer.
 
@@ -89,6 +89,7 @@ A scan needs `cv.md`, `config/profile.yml` and `portals.yml` in the data folder 
 | `workers/jobspy` | Python worker: calls `jobspy.scrape_jobs()` and emits a JSON envelope |
 | `adapters/jobspy` | Runs the worker and maps JobSpy rows to `CanonicalJob` |
 | `adapters/career-ops` | Runs Career Ops scripts (health, verify, scan) against the isolated data folder |
+| `packages/dedup` | Cross-source deduplication: identity keys, conflict rules, provenance-preserving merges |
 | `packages/rolecraft-client` | Pushes canonical jobs to a local Rolecraft in batches (loopback only) |
 | `services/discovery` | The `discover`, `push` and `career-ops` commands |
 | `tests/integration` | Fixture jobs → Rolecraft round trip (`ROLECRAFT_URL=http://127.0.0.1:5173 npm run test:integration`) |

@@ -35,7 +35,8 @@ PRODUCT              Rolecraft: discovered-jobs inbox, applications, follow-ups
 | `workers/jobspy` | Discovery (Python side) | done |
 | `adapters/jobspy` | Discovery → Normalization | done |
 | `adapters/career-ops` | Runtime (health, verify, scan) and portal postings → CanonicalJob | done (Phases 8–9); evaluation Phase 13 |
-| `packages/dedup`, `packages/filters` | Filtering | Phases 10–11 |
+| `packages/dedup` | Cross-source dedup: identity keys, conflicts, merges | done (Phase 10) |
+| `packages/filters` | Hard filters | Phase 11 |
 | `packages/candidate-profile` | Evaluation input | Phase 12 |
 | `packages/rolecraft-client` | Normalization → Product (push to Rolecraft) | done |
 | `services/discovery` | Runs and merges sources, saves runs, pushes to Rolecraft (`discover --sources`, `push`, `career-ops`) | done |

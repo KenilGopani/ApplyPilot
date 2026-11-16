@@ -102,6 +102,26 @@ A receipt URL missing from the history is rejected, not skipped. Scans return on
 
 Not exposed yet (`npm run career-ops -- capabilities`): job evaluation, resume tailoring, application preparation, company and contact research. All of them need an AI CLI or model provider.
 
+## Deduplication (Phase 10)
+
+`packages/dedup` gives every job identity keys (`kind:value`), strongest first:
+
+| Kind | Value | Merges? |
+|---|---|---|
+| `id` | the job's canonical id (and the ids of copies merged into it) | yes |
+| `url` | canonical posting or apply URL | yes |
+| `ats` | ATS job identity parsed from any URL: `greenhouse:<id>` (board, embed, `?gh_jid=`), `lever:<uuid>`, `ashby:<uuid>` | yes |
+| `req` | `<company>:<requisition id>` (Career Ops) | yes |
+| `fp` | hash of the normalized description, only when it is 300+ characters | yes |
+| `cctl` | normalized company + title + first city | yes |
+| `ct` | normalized company + title | no: reported as a possible duplicate |
+
+Conflict rule: two jobs with different `ats` ids (same ATS) or different `req` ids (same company) are different openings and are never merged, whatever else they share.
+
+Merging keeps every sighting in `provenance`. The primary record is the employer's posting (ATS or company page) before job boards, then the earliest sighting; fields it lacks (description, location, posted date, employment type, remote type, salary as one unit) are filled from the others. The primary's raw record stays on the job; every other raw record stays in its saved run file (`runtime/discovery/<runId>.json`), which each provenance entry's `runId` names.
+
+Each run is deduplicated before it is pushed and every job carries `dedupKeys`. Rolecraft stores the keys (`discovered_job_keys`) and merges an import into a stored job that shares a key (strongest kind wins, conflicts excluded). A job you acted on (status changed or promoted) always survives a merge; two acted-on jobs are never merged. Import responses include `merged`. `npm run push -- --all` re-sends every saved run with keys; it is idempotent.
+
 ## Rolecraft native format
 
 One workspace JSON per user: `{ jobs: Job[], resume: {name, source}, weeklyGoal }`, Zod-validated, revisioned. See [rolecraft-inventory.md](rolecraft-inventory.md). Workspace jobs saved from the inbox carry `discoveredJobId`.
