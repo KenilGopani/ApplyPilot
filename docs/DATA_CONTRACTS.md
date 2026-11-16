@@ -69,4 +69,19 @@ The TypeScript side maps these to `PlatformError` codes `DISCOVERY_INVALID_REQUE
 
 ## Rolecraft native format
 
-One workspace JSON per user: `{ jobs: Job[], resume: {name, source}, weeklyGoal }`, Zod-validated, revisioned. See [rolecraft-inventory.md](rolecraft-inventory.md).
+One workspace JSON per user: `{ jobs: Job[], resume: {name, source}, weeklyGoal }`, Zod-validated, revisioned. See [rolecraft-inventory.md](rolecraft-inventory.md). Workspace jobs saved from the inbox carry `discoveredJobId`.
+
+## Rolecraft discovered-jobs API (Phase 7)
+
+Local only: ApplyPilot sends `Cookie: __sites_local_auth=1` and `Origin: <rolecraft origin>` to the loopback dev server.
+
+| Call | Body / query | Result |
+|---|---|---|
+| `POST /api/discovered-jobs` | `{ run: {runId, adapter, status, startedAt, finishedAt, metrics}, jobs: CanonicalJob[] (≤200) }` | `{ received, created, updated }` |
+| `GET /api/discovered-jobs` | `?status=new\|review\|saved\|skip\|applied`, `?limit=0..500` (0 = counts only) | `{ jobs: summary[], counts, runs }` |
+| `GET /api/discovered-jobs/:id` | | `{ job }` with description, provenance, rawSource |
+| `PATCH /api/discovered-jobs/:id` | `{ status, promotedJobId? }` | `{ ok }` |
+| `DELETE /api/discovered-jobs/:id` | | `{ ok }` |
+| `DELETE /api/discovered-jobs/runs/:runId` | | `{ ok }` (jobs stay) |
+
+Import rules: content fields and `lastSeenAt` are refreshed; `status`, `promotedJobId` and `firstSeenAt` are never overwritten; provenance is merged by site + url + run, so re-importing a run adds nothing and a later run adds a sighting. Rolecraft restates the CanonicalJob contract in `lib/discovery.ts`; `tests/integration/discovery-to-rolecraft.test.ts` keeps the two in step.

@@ -13,4 +13,10 @@ Policy (plan Phase 28): before changing JobSpy, Career Ops or Rolecraft source t
 
 ## Log
 
-None. All three sources are unmodified.
+JobSpy and Career Ops: none; both are unmodified.
+
+Rolecraft (KenilJobBoard) is the product being built, not a third-party upstream, so features land there directly on a branch, with their own tests:
+
+| Date | Branch | Change | Tests |
+|---|---|---|---|
+| 2026-11-15 | `feat/discovered-jobs` | `discovered_jobs` / `discovery_runs` tables (migration 0001), discovered-jobs API, Discovered inbox UI, optional `discoveredJobId` on workspace jobs, `allowImportingTsExtensions` in tsconfig | `npm test` 12/12, `npm run test:api` 2/2, typecheck, build; lint unchanged from `main` |

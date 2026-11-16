@@ -37,6 +37,8 @@ PRODUCT              Rolecraft: discovered-jobs inbox, applications, follow-ups
 | `adapters/career-ops` | Discovery + Evaluation | Phase 8 |
 | `packages/dedup`, `packages/filters` | Filtering | Phases 10–11 |
 | `packages/candidate-profile` | Evaluation input | Phase 12 |
-| Rolecraft integration | Product | Phase 7 |
+| `packages/rolecraft-client` | Normalization → Product (push to Rolecraft) | done |
+| `services/discovery` | Runs adapters, saves runs, pushes to Rolecraft (`discover`, `push`) | done |
+| Rolecraft `discovered_jobs` + inbox | Product | done (KenilJobBoard `feat/discovered-jobs`) |
 
 Directories are created when their phase starts rather than scaffolded empty.
