@@ -1,0 +1,22 @@
+{
+  "version": "careerops.scan.receipt@1",
+  "date": "2026-11-15",
+  "scanned": 5,
+  "skipped": 0,
+  "found": 40,
+  "filtered": 33,
+  "duplicates": 1,
+  "added": 6,
+  "added_urls": [
+    "https://job-boards.greenhouse.io/examplelabs/jobs/7001",
+    "https://jobs.lever.co/northwind/2b9c-44",
+    "https://jobs.ashbyhq.com/contoso/5f1e",
+    "https://careers.fabrikam.example/jobs/991",
+    "https://job-boards.greenhouse.io/examplelabs/jobs/7003",
+    "https://job-boards.greenhouse.io/examplelabs/jobs/9999"
+  ],
+  "errors": [{ "company": "Parloa", "error": "HTTP 404" }],
+  "unverified_zero": [],
+  "partial": [],
+  "dry_run": false
+}

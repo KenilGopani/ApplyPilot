@@ -7,7 +7,9 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
+  SCAN_HISTORY_COLUMNS,
   careerOpsHealth,
   initCareerOpsDataRoot,
   resolveCareerOpsHome,
@@ -57,4 +59,12 @@ test("real Career Ops: health, verify and an offline dry-run scan on a fresh dat
   // The pinned checkout stays untouched.
   const dirty = execFileSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: home, encoding: "utf8" });
   assert.equal(dirty.trim(), "");
+});
+
+test("the scan-history column layout matches the pinned checkout", { skip }, async () => {
+  // Test-only import of upstream's declaration; the adapter itself never imports Career Ops code.
+  const upstream = (await import(pathToFileURL(join(home, "lib", "scan-history-columns.mjs")).href)) as {
+    SCAN_HISTORY_COLUMNS: readonly string[];
+  };
+  assert.deepEqual([...SCAN_HISTORY_COLUMNS], [...upstream.SCAN_HISTORY_COLUMNS]);
 });

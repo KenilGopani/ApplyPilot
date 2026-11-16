@@ -1,0 +1,8 @@
+url	first_seen	portal	title	company	status	location	fingerprint	posted_at	trust_score	trust_flags	normalized_company	requisition_id	language	listing_key	closes_at
+https://job-boards.greenhouse.io/examplelabs/jobs/7001	2026-11-15	greenhouse-api	Applied AI Engineer	Example Labs	added	San Francisco, CA | New York City, NY	aa11	2026-11-10			examplelabs	REQ-7001		listing_v1_a	
+https://jobs.lever.co/northwind/2b9c-44	2026-11-15	lever-api	Backend Engineer, Platform	Northwind Data	added	Remote - US	bb22	2026-11-12			northwind	NW-44		listing_v1_b	
+https://jobs.ashbyhq.com/contoso/5f1e	2026-11-15	ashby-api	'=AI Engineer (Agents)	Contoso	added	Hybrid - Seattle, WA	cc33	2026-11-14			contoso			listing_v1_c	
+https://careers.fabrikam.example/jobs/991	2026-11-15	workday	Software Engineer, LLM Tools	Fabrikam	added	Remote-Friendly (Travel-Required) | Austin, TX	dd44	not-a-date			fabrikam				
+https://job-boards.greenhouse.io/examplelabs/jobs/7002	2026-11-15	greenhouse-api	Senior Staff Engineer	Example Labs	skipped_title	San Francisco, CA	ee55	2026-11-10
+https://job-boards.greenhouse.io/examplelabs/jobs/7003	2026-11-15	greenhouse-api		Example Labs	added	San Francisco, CA	ff66	2026-11-10
+https://jobs.lever.co/northwind/legacy-1	2026-10-01	lever-api	ML Engineer	Northwind Data	added	New York, NY
