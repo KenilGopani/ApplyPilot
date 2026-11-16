@@ -1,0 +1,17 @@
+{
+  "name": "@applypilot/dedup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-source job deduplication: identity keys, conflict rules and provenance-preserving merges.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@applypilot/job-schema": "0.1.0"
+  },
+  "devDependencies": {
+    "@applypilot/adapter-career-ops": "0.1.0",
+    "@applypilot/adapter-jobspy": "0.1.0"
+  }
+}

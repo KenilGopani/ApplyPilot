@@ -107,6 +107,12 @@ export const canonicalJobSchema = z
 
     /** The untouched upstream record, kept for traceability and re-mapping. */
     rawSource: z.unknown().optional(),
+
+    /**
+     * Identity keys from the dedup engine ("kind:value", e.g. "ats:greenhouse:123").
+     * Rolecraft merges an imported job into an existing one that shares a key.
+     */
+    dedupKeys: z.array(z.string().min(3).max(600)).max(60).optional(),
   })
   .superRefine((job, ctx) => {
     if (
