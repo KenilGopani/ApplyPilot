@@ -9,16 +9,19 @@
   },
   "workspaces": [
     "packages/*",
-    "adapters/*"
+    "adapters/*",
+    "services/*"
   ],
   "scripts": {
-    "test": "node --experimental-strip-types --test \"packages/*/test/*.test.ts\" \"adapters/*/test/*.test.ts\" \"tests/**/*.test.ts\"",
+    "test": "node --experimental-strip-types --test \"packages/*/test/*.test.ts\" \"adapters/*/test/*.test.ts\" \"services/*/test/*.test.ts\" \"tests/**/*.test.ts\"",
     "test:python": "node scripts/run-jobspy-python.mjs -m unittest discover -s workers/jobspy/tests",
     "typecheck": "tsc --noEmit",
     "verify:sources": "node scripts/verify-sources.mjs",
     "verify": "npm run verify:sources && npm run typecheck && npm test && npm run test:python",
     "setup:jobspy": "node scripts/setup-jobspy.mjs",
-    "discover": "node --experimental-strip-types adapters/jobspy/src/cli.ts"
+    "discover": "node --experimental-strip-types services/discovery/src/cli.ts",
+    "test:integration": "node --experimental-strip-types --test \"tests/integration/*.test.ts\"",
+    "push": "node --experimental-strip-types services/discovery/src/push.ts"
   },
   "devDependencies": {
     "@types/node": "22.19.19",
