@@ -1,0 +1,13 @@
+{
+  "name": "@applypilot/adapter-career-ops",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runs the pinned Career Ops checkout against an isolated data directory and returns typed results.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  }
+}
