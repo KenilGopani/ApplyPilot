@@ -4,6 +4,7 @@ import { CareerOpsError } from "@applypilot/adapter-career-ops";
 import { ClaudeError } from "@applypilot/adapter-claude-code";
 import { DEFAULT_ROLECRAFT_URL, RolecraftError } from "@applypilot/rolecraft-client";
 import { loadCandidateProfile } from "@applypilot/candidate-profile";
+import { createLogger } from "@applypilot/logging";
 import { evaluateInbox } from "./evaluate.ts";
 
 const USAGE = `Usage: npm run evaluate -- [options]
@@ -67,6 +68,15 @@ async function main(): Promise<number> {
     log: (line) => console.log(line),
   });
   const t = summary.tokens;
+  createLogger("evaluation").info("evaluate", {
+    triaged: summary.triaged.length,
+    evaluated: summary.evaluated.map((e) => ({ id: e.id, score: e.score, decision: e.decision })),
+    skipped: summary.skipped.length,
+    failed: summary.failed.map((f) => f.id),
+    claude_calls: summary.claudeCalls,
+    tokens: summary.tokens,
+    stopped_by_limit: Boolean(summary.stoppedByLimit),
+  });
   console.log(
     `\ndone: ${summary.triaged.length} quick-checked, ${summary.evaluated.length} fully evaluated, ` +
       `${summary.skipped.length} skipped, ${summary.failed.length} failed · ` +

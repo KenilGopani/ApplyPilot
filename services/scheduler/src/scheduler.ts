@@ -2,6 +2,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { createLogger } from "@applypilot/logging";
 import { loadCandidateProfile, toFilterPolicy } from "@applypilot/candidate-profile";
 import { runDiscovery, runInfo, saveRun, type DiscoverySource, type MergedDiscovery } from "@applypilot/discovery";
 import { evaluateInbox } from "@applypilot/evaluation";
@@ -146,6 +147,7 @@ export async function runSearch(search: Search, deps: RunDeps = {}): Promise<Sch
   const logDir = deps.logDir ?? LOG_DIR;
   mkdirSync(logDir, { recursive: true });
   appendFileSync(join(logDir, "schedule-runs.jsonl"), `${JSON.stringify(record)}\n`);
+  createLogger("scheduler", logDir).info("scheduled-run", { ...record });
   return record;
 }
 

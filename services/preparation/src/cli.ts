@@ -2,6 +2,7 @@
 import { parseArgs } from "node:util";
 import { loadCandidateProfile, ProfileError } from "@applypilot/candidate-profile";
 import { DEFAULT_ROLECRAFT_URL } from "@applypilot/rolecraft-client";
+import { createLogger } from "@applypilot/logging";
 import { prepareApplication } from "./prepare.ts";
 
 const USAGE = `Usage: npm run prepare-application -- --job <discovered job id> [options]
@@ -45,6 +46,15 @@ async function main(): Promise<number> {
     withDrafts: values.drafts,
     claude: values.model ? { model: values.model } : {},
     rolecraft: { baseUrl: values["rolecraft-url"] },
+  });
+  createLogger("preparation").info("prepared", {
+    job_id: values.job,
+    family: bundle.resume.family,
+    version_id: bundle.resume.versionId,
+    priorities: bundle.priorities.length,
+    gaps: bundle.gaps.length,
+    with_drafts: Boolean(bundle.drafts),
+    unverified_numbers: bundle.drafts?.unverifiedNumbers.length ?? 0,
   });
   console.log(`resume: ${bundle.resume.family} (${bundle.resume.reason})`);
   console.log(`tailored version: ${bundle.resume.file} (${bundle.resume.changedLines} lines reordered)`);

@@ -7,7 +7,10 @@ import { parseArgs } from "node:util";
 import type { DiscoveryResult } from "@applypilot/job-schema";
 import { DEFAULT_ROLECRAFT_URL, RolecraftError, pushDiscovery } from "@applypilot/rolecraft-client";
 import { ProfileError, loadCandidateProfile, toFilterPolicy } from "@applypilot/candidate-profile";
+import { createLogger } from "@applypilot/logging";
 import { discoverySources, runDiscovery, runInfo, saveRun, type DiscoverySource } from "./pipeline.ts";
+
+const log = createLogger("discovery");
 
 export { runInfo };
 
@@ -119,12 +122,28 @@ async function main(): Promise<number> {
   const saved: { result: DiscoveryResult; path: string }[] = [];
   for (const outcome of merged.outcomes) {
     if (!outcome.result) {
+      log.error("source-failed", { source: outcome.source, error: outcome.error });
       console.error(`${outcome.source}: could not run: ${outcome.error}`);
       exit = 1;
       continue;
     }
     const extra = outcome.source === "jobspy" ? { request: { ...jobspy, proxies: undefined } } : {};
     const path = saveRun(outcome.result, extra);
+    const r = outcome.result;
+    log.run({
+      run_id: r.runId,
+      source: r.adapter,
+      query: jobspy?.search_term,
+      start: r.startedAt,
+      end: r.finishedAt ?? r.startedAt,
+      jobs_found: r.metrics.returned,
+      jobs_normalized: r.metrics.mapped,
+      duplicates: r.metrics.duplicates,
+      filtered: outcome.screening?.verdicts.reject ?? 0,
+      evaluated: 0,
+      failures: [...r.errors.map((e) => `${e.site}: ${e.message}`), ...r.rejected.map((x) => x.reason)].slice(0, 50),
+      duration_ms: r.durationMs ?? 0,
+    });
     printResult(outcome.result, path);
     if (outcome.screening) {
       const s = outcome.screening;
