@@ -10,8 +10,9 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mapJobSpyEnvelope, type JobSpyEnvelope } from "@applypilot/adapter-jobspy";
+import { mapPortalScan, scanReceiptSchema } from "@applypilot/adapter-career-ops";
 import { pushDiscovery, resolveRolecraftUrl } from "@applypilot/rolecraft-client";
-import { runInfo } from "../../services/discovery/src/cli.ts";
+import { runInfo } from "../../services/discovery/src/pipeline.ts";
 
 const base = process.env.ROLECRAFT_URL;
 const fixtures = resolve(dirname(fileURLToPath(import.meta.url)), "../fixtures/jobspy");
@@ -94,5 +95,39 @@ test("discovered fixture jobs land in Rolecraft with provenance and raw data int
   } finally {
     for (const job of result.jobs) await api(`/${job.id}`, { method: "DELETE" });
     await api(`/runs/${runId}`, { method: "DELETE" });
+  }
+});
+
+test("Career Ops portal jobs land in Rolecraft next to JobSpy jobs, each under its own run", { skip: !base && "set ROLECRAFT_URL to run" }, async () => {
+  const origin = resolveRolecraftUrl(base).origin;
+  const headers = { Cookie: "__sites_local_auth=1", Origin: origin, "Content-Type": "application/json" };
+  const api = (path: string, init: RequestInit = {}) =>
+    fetch(`${origin}/api/discovered-jobs${path}`, { ...init, headers });
+  const co = resolve(fixtures, "../career-ops");
+  const stamp = Date.now().toString(36);
+  const portal = mapPortalScan(
+    scanReceiptSchema.parse(JSON.parse(readFileSync(join(co, "receipt.json"), "utf8"))),
+    readFileSync(join(co, "scan-history.tsv"), "utf8"),
+    { runId: `run_it_co_${stamp}`, startedAt: new Date().toISOString(), finishedAt: new Date().toISOString(), durationMs: 1, upstreamVersion: "career-ops@1.40.0" },
+  );
+  const boards = mapJobSpyEnvelope(fixtureEnvelope(`run_it_js_${stamp}`));
+  const all = [...portal.jobs, ...boards.jobs];
+  try {
+    await pushDiscovery(runInfo(portal), portal.jobs, { baseUrl: origin });
+    await pushDiscovery(runInfo(boards), boards.jobs, { baseUrl: origin });
+    for (const job of portal.jobs) {
+      const { job: stored } = (await (await api(`/${job.id}`)).json()) as { job: Record<string, unknown> };
+      assert.equal(stored.source, job.source);
+      assert.equal(stored.title, job.title);
+      assert.deepEqual(stored.rawSource, job.rawSource);
+      const provenance = stored.provenance as { adapter: string; site: string }[];
+      assert.equal(provenance[0]?.adapter, "career-ops");
+    }
+    const list = (await (await api("?limit=0")).json()) as { runs: { runId: string; adapter: string }[] };
+    assert.equal(list.runs.find((r) => r.runId === portal.runId)?.adapter, "career-ops");
+    assert.equal(list.runs.find((r) => r.runId === boards.runId)?.adapter, "jobspy");
+  } finally {
+    for (const job of all) await api(`/${job.id}`, { method: "DELETE" });
+    for (const runId of [portal.runId, boards.runId]) await api(`/runs/${runId}`, { method: "DELETE" });
   }
 });
