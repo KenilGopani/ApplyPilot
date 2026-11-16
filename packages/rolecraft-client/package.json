@@ -1,0 +1,13 @@
+{
+  "name": "@applypilot/rolecraft-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pushes canonical discovery results into a local Rolecraft's Discovered inbox.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@applypilot/job-schema": "0.1.0"
+  }
+}
