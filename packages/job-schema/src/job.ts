@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { canonicalScreeningSchema } from "./screening.ts";
 
 /**
  * Where a posting was found. JobSpy boards that the platform does not track
@@ -113,6 +114,9 @@ export const canonicalJobSchema = z
      * Rolecraft merges an imported job into an existing one that shares a key.
      */
     dedupKeys: z.array(z.string().min(3).max(600)).max(60).optional(),
+
+    /** Hard-filter result (Phase 11). */
+    screening: canonicalScreeningSchema.optional(),
   })
   .superRefine((job, ctx) => {
     if (

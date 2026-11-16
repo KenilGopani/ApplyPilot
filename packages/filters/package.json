@@ -1,0 +1,13 @@
+{
+  "name": "@applypilot/filters",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cheap, rule-based hard filters run before any model-based evaluation.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@applypilot/job-schema": "0.1.0"
+  }
+}
