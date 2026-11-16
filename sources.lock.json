@@ -1,0 +1,23 @@
+{
+  "$comment": "Pinned upstream checkouts. Update only through the procedure in docs/SOURCE_VERSIONS.md.",
+  "sources": {
+    "JobSpy": {
+      "url": "git@github.com:speedyapply/JobSpy.git",
+      "ref": "main",
+      "commit": "68b88d6909a2342ad75fbb945c4204a3a7ed6665",
+      "version": "python-jobspy 1.4.1"
+    },
+    "career-ops": {
+      "url": "https://github.com/career-ops-hq/career-ops.git",
+      "ref": "detached (release 1.40.0)",
+      "commit": "9170fed51af6894753a9f520074529d15e38a004",
+      "version": "career-ops 1.40.0"
+    },
+    "KenilJobBoard": {
+      "url": "git@github.com:KenilGopani/KenilJobBoard.git",
+      "ref": "main",
+      "commit": "1fe85851d777ab3450859934ef8e22a269278c64",
+      "version": "rolecraft 0.1.0"
+    }
+  }
+}
