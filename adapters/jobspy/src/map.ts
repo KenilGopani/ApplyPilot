@@ -4,9 +4,14 @@ import {
   canonicalizeUrl,
   salaryIntervals,
   type CanonicalJob,
+  type DiscoveryResult,
   type JobSourceName,
+  type MappedJob,
+  type RejectedRecord,
+  type SiteMetrics,
   type RemoteType,
 } from "@applypilot/job-schema";
+export type { DiscoveryResult, MappedJob, RejectedRecord, SiteMetrics } from "@applypilot/job-schema";
 import { jobSpyRecordSchema, type JobSpyEnvelope, type JobSpyRecord } from "./envelope.ts";
 
 /** JobSpy `site` value -> platform source. Unlisted boards become "other". */
@@ -22,18 +27,6 @@ export interface MappingContext {
   runId: string;
   discoveredAt: string;
   upstreamVersion?: string;
-}
-
-export interface MappedJob {
-  job: CanonicalJob;
-  /** Data dropped or adjusted during mapping, e.g. an inverted salary range. */
-  warnings: string[];
-}
-
-export interface RejectedRecord {
-  index: number;
-  reason: string;
-  record: unknown;
 }
 
 const trimmed = (v: string | undefined) => {
@@ -146,36 +139,6 @@ export function mapJobSpyRecord(raw: unknown, ctx: MappingContext): MappedJob {
   return { job: result.data, warnings };
 }
 
-export interface SiteMetrics {
-  returned: number;
-  mapped: number;
-  rejected: number;
-  error: string | null;
-  warnings: string[];
-}
-
-export interface DiscoveryResult {
-  status: "ok" | "partial" | "failed";
-  runId: string;
-  upstreamVersion: string | null;
-  startedAt: string;
-  finishedAt: string | null;
-  durationMs: number | null;
-  metrics: {
-    requestedPerSite: number;
-    returned: number;
-    mapped: number;
-    rejected: number;
-    /** Same posting returned twice by one board in one run (kept once). */
-    duplicates: number;
-    bySite: Record<string, SiteMetrics>;
-  };
-  jobs: CanonicalJob[];
-  jobWarnings: Record<string, string[]>;
-  rejected: RejectedRecord[];
-  errors: { site: string; message: string }[];
-}
-
 /** Translate a whole worker envelope. Never drops a record silently. */
 export function mapJobSpyEnvelope(envelope: JobSpyEnvelope): DiscoveryResult {
   const ctx: MappingContext = {
@@ -234,6 +197,7 @@ export function mapJobSpyEnvelope(envelope: JobSpyEnvelope): DiscoveryResult {
         : "ok";
 
   return {
+    adapter: "jobspy",
     status,
     runId: envelope.run_id,
     upstreamVersion: envelope.upstream.version,
