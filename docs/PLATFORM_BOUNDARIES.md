@@ -42,6 +42,6 @@ PRODUCT              Rolecraft: discovered-jobs inbox, applications, follow-ups
 | `services/scheduler`, `packages/logging`, `packages/config` | Scheduled discovery, logs, configuration | done (Phases 21–25) |
 | `packages/rolecraft-client` | Normalization → Product (push to Rolecraft) | done |
 | `services/discovery` | Runs and merges sources, saves runs, pushes to Rolecraft (`discover --sources`, `push`, `career-ops`) | done |
-| Rolecraft `discovered_jobs` + inbox | Product | done (KenilJobBoard `feat/discovered-jobs`) |
+| Rolecraft `discovered_jobs` + inbox | Product | done (KenilJobBoard `main`, merged in PR #1) |
 
 Directories are created when their phase starts rather than scaffolded empty.
