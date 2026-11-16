@@ -1,119 +1,89 @@
 # ApplyPilot
 
-Local-first job discovery, evaluation and application tracking. ApplyPilot composes three existing projects instead of rewriting them:
+Local-first job search: discover jobs automatically, filter and evaluate them against your profile, prepare each application with your own resume, and track everything through to offers. ApplyPilot composes three projects instead of rewriting them:
 
 - **[JobSpy](https://github.com/speedyapply/JobSpy)** finds jobs on LinkedIn, Indeed, Glassdoor, ZipRecruiter and regional boards.
-- **[Career Ops](https://github.com/career-ops-hq/career-ops)** scans company ATS portals and evaluates postings against a candidate profile.
-- **Rolecraft** ([KenilJobBoard](https://github.com/KenilGopani/KenilJobBoard)) is the dashboard and system of record for applications.
+- **[Career Ops](https://github.com/career-ops-hq/career-ops)** scans company ATS portals, fetches job descriptions and evaluates postings.
+- **Rolecraft** ([KenilJobBoard](https://github.com/KenilGopani/KenilJobBoard)) is the dashboard and system of record.
 
-Each engine runs unmodified behind an adapter that translates its output into one canonical job schema. See [docs/INTEGRATION_PLAN.md](docs/INTEGRATION_PLAN.md) for the full roadmap.
+Each engine runs unmodified behind an adapter; `npm run verify:sources` proves they stay untouched. Nothing is ever submitted to an employer: ApplyPilot prepares, you review and click Submit. The full roadmap is [docs/INTEGRATION_PLAN.md](docs/INTEGRATION_PLAN.md).
 
 ## Status
 
 | Milestone | State |
 |---|---|
 | 1. Baseline: pins, inventories, capability matrix | done |
-| 2. JobSpy → CanonicalJob → Rolecraft | done: discovered jobs land in Rolecraft's Discovered inbox |
-| 3. Multi-source discovery | done: JobSpy boards + Career Ops company portals land in Rolecraft, deduplicated across sources |
-| 4. Intelligent evaluation | Hard filters, candidate profile and Career Ops evaluation through your Claude login done; resume routing next |
-| 5–6. Application workspace, analytics, scheduling | not started |
+| 2. JobSpy → CanonicalJob → Rolecraft | done |
+| 3. Multi-source discovery with cross-source dedup | done |
+| 4. Hard filters → Career Ops evaluation → resume router | done |
+| 5. Application workspace: tailoring, prep, drafts, follow-ups | done |
+| 6. Analytics and scheduling | done |
+| Verification, fixtures, logging, config, dev command, upstream guards | done |
 
 ## Setup
 
-Requires Node ≥ 22.13 and [uv](https://docs.astral.sh/uv/). The three source repositories are expected next to this one:
+Requires Node ≥ 22.13, [uv](https://docs.astral.sh/uv/), and the three sources next to this repository:
 
 ```text
 KenilOwnJobEngine/
-├── ApplyPilot/
-├── JobSpy/
-├── career-ops/
-└── KenilJobBoard/
+├── ApplyPilot/      ├── JobSpy/      ├── career-ops/      └── KenilJobBoard/
 ```
 
 ```bash
 npm install
-npm run setup:jobspy      # Python 3.12 venv in runtime/ with the pinned JobSpy installed editable
-npm run verify            # source pins, typecheck, TS tests, Python worker tests
+npm run setup:jobspy                                             # Python 3.12 venv with the pinned JobSpy
+cp config/candidate-profile.example.json runtime/candidate-profile.json   # then edit it
+npm run profile -- sync                                          # writes Career Ops' profile.yml from it
+npm run dev                                                      # health checks + starts Rolecraft
 ```
 
-## Run Rolecraft locally
+Rolecraft runs at http://127.0.0.1:5173 (apply its migrations `0000`–`0005` once; see its README). Settings: [docs/CONFIGURATION.md](docs/CONFIGURATION.md). Runtime layout: [docs/LOCAL_RUNTIME.md](docs/LOCAL_RUNTIME.md).
 
-Discovered jobs are shown in Rolecraft (KenilJobBoard, branch `feat/discovered-jobs`). Once, in `../KenilJobBoard`: `npm ci`, `npm run build`, then apply both migrations as its README describes (`drizzle/0000_*.sql` and `drizzle/0001_discovered_jobs.sql`). Then start it:
+## Daily use
 
 ```bash
-cd ../KenilJobBoard && npm run dev -- --host 127.0.0.1
+npm run discover -- "applied ai engineer" --sources jobspy,career-ops --push   # find, filter, import
+npm run evaluate -- --limit 3                                                  # quick check, then full evaluation of the best
+npm run prepare-application -- --job <job id> --drafts                         # resume version, priorities, gaps, drafts
+npm run schedule -- start                                                      # or: run <name>, list, log
 ```
 
-Open http://127.0.0.1:5173 and use the local sign-in.
+In Rolecraft's **Discovered** inbox: jobs that fail your hard filters wait in **Filtered out** with the reason; **Best match** sorts by evaluation; each job shows its sponsorship signal, Career Ops' score with CV-quoted matches and gaps, the resume to use and the application prep. **Save** or **Applied** moves a job into Opportunities, where stage changes build a timeline and schedule follow-ups. **Analytics** shows which roles, resumes and sources turn applications into interviews.
 
-## Discover jobs
+| Command | What it does |
+|---|---|
+| `discover` | JobSpy and/or Career Ops portal scan → canonical jobs → dedup → hard filters → Rolecraft |
+| `push -- --all` | Re-send saved runs (re-deduplicated and re-screened) |
+| `profile -- show / policy / sync` | The candidate profile, its filter policy, and the sync into Career Ops |
+| `career-ops -- doctor / verify / scan / capabilities` | Career Ops through its adapter |
+| `evaluate` | Career Ops triage + full evaluation via your `claude` login (no API key), capped per run |
+| `prepare-application` | Application prep bundle; drafts only with `--drafts` |
+| `schedule` | Scheduled discovery; quick checks only if a search asks for them |
+| `dev` | Health check of every part, then start Rolecraft (and `--with-scheduler`) |
+| `verify` / `verify:integration` | Fast checks / the plan's 18 integration checks (`--full` adds Career Ops' native suite) |
+| `config:check`, `sources:check-updates` | Resolved settings / how far each source is behind upstream |
 
-```bash
-npm run discover -- "applied ai engineer" --site indeed,linkedin --location "San Francisco, CA" -n 20 --push
-```
+## Costs and limits
 
-Writes `runtime/discovery/<run id>.json` with canonical jobs, rejected records (with reasons) and per-board metrics, and with `--push` imports the jobs into Rolecraft's **Discovered** inbox. Board failures such as LinkedIn rate limits are reported per board; the run still returns the other boards' jobs. Importing is idempotent and never resets a decision you made in the inbox. A saved run can be imported later:
+Discovery, filters, deduplication, description fetching, routing, tailoring and analytics are free. Only `evaluate` and `prepare-application --drafts` use Claude. A full evaluation is about 65K input and 13K output tokens, so a Claude Pro usage window covers a handful; quick checks are about 2K tokens per job. A usage limit stops a run cleanly and keeps finished work.
 
-```bash
-npm run push -- runtime/discovery/<run id>.json
-```
+## Ground rules
 
-Add Career Ops' company-portal scan (Greenhouse, Lever, Ashby, … from `runtime/career-ops-data/portals.yml`) with `--sources`:
-
-```bash
-npm run discover -- "applied ai engineer" --sources jobspy,career-ops --push   # both
-npm run discover -- --sources career-ops --push                               # portals only
-```
-
-Each source is saved and imported as its own run. A portal scan returns only postings it has not seen before. The same posting found on several sources becomes one job in Rolecraft (see [docs/DATA_CONTRACTS.md](docs/DATA_CONTRACTS.md#deduplication-phase-10)); `npm run push -- --all` re-sends saved runs so older ones are deduplicated too.
-
-In the inbox, **Save** or **Applied** adds a job to Opportunities (linked back to its discovered record); **Review**, **Skip** and **Restore** only change its inbox status. Nothing is ever submitted to an employer.
-
-## Career Ops
-
-ApplyPilot runs the pinned Career Ops checkout against its own data folder, `runtime/career-ops-data`, so your Career Ops files never live inside the checkout.
-
-```bash
-npm run career-ops -- init           # create the data folder
-npm run career-ops -- doctor         # what Career Ops still needs (cv.md, profile, portals.yml, …)
-npm run career-ops -- scan --dry-run # preview a scan of the boards in portals.yml
-npm run career-ops -- capabilities   # which Career Ops operations ApplyPilot exposes
-```
-
-A scan needs `cv.md`, `config/profile.yml` and `portals.yml` in the data folder (Career Ops' format). `npm run discover -- --sources career-ops --push` brings its postings into Rolecraft.
-
-## Filters, profile and evaluation
-
-Your profile lives in `runtime/candidate-profile.json` (git-ignored; start from `config/candidate-profile.example.json`). It drives the hard filters that every `discover` and `push` run applies, for free: location, posting age, title level, required years, salary floor, excluded companies and keywords, and sponsorship read only from the posting's own words. Rejected jobs move to Rolecraft's **Filtered out** tab with the reason.
-
-```bash
-npm run profile -- show     # check the profile
-npm run profile -- sync     # write Career Ops' config/profile.yml from it
-npm run evaluate -- --limit 3
-```
-
-`evaluate` runs Career Ops' own prompts through your `claude` CLI login (a Claude Pro subscription works; no API key), with no tools: a cheap batched quick check, then a full A–G evaluation of the best jobs that pass, capped per run. A full evaluation costs roughly 65K input / 13K output tokens, so a Pro usage window covers a handful. Scores, decisions and CV-quoted matches appear in the inbox (sort by **Best match**); a matched skill counts only when its quote is really in your `cv.md`. Reports are saved to `runtime/evaluations/`.
+- JobSpy and Career Ops are never edited in place; Rolecraft changes land on a branch with tests ([docs/UPSTREAM_PATCHES.md](docs/UPSTREAM_PATCHES.md), updates via [docs/UPSTREAM_UPDATES.md](docs/UPSTREAM_UPDATES.md)).
+- Nothing is invented: matches must quote your CV, tailored resumes only reorder your own lines, gaps stay gaps, unverified numbers in drafts are flagged, sponsorship is never inferred.
+- `runtime/` (profile, Career Ops data, runs, evaluations, resume versions, logs) is git-ignored; logs redact personal data.
+- No automatic submission, ever.
 
 ## Layout
 
 | Path | Purpose |
 |---|---|
-| `packages/job-schema` | `CanonicalJob`, provenance, evaluation and decision schemas (Zod) |
-| `workers/jobspy` | Python worker: calls `jobspy.scrape_jobs()` and emits a JSON envelope |
-| `adapters/jobspy` | Runs the worker and maps JobSpy rows to `CanonicalJob` |
-| `adapters/career-ops` | Runs Career Ops scripts (health, verify, scan) against the isolated data folder |
-| `packages/dedup` | Cross-source deduplication: identity keys, conflict rules, provenance-preserving merges |
-| `packages/filters`, `packages/candidate-profile` | Hard filters and the canonical candidate profile |
-| `adapters/claude-code` | Headless `claude -p` with no tools, on your own login |
-| `services/evaluation` | `npm run evaluate`: triage then Career Ops evaluation |
-| `packages/rolecraft-client` | Pushes canonical jobs to a local Rolecraft in batches (loopback only) |
-| `services/discovery` | The `discover`, `push` and `career-ops` commands |
-| `tests/integration` | Fixture jobs → Rolecraft round trip (`ROLECRAFT_URL=http://127.0.0.1:5173 npm run test:integration`) |
-| `tests/fixtures/jobspy` | Fictional rows for every JobSpy board, generated with JobSpy's own serializer |
-| `scripts/` | Setup, source-pin verification |
-| `runtime/` | Local, git-ignored state (venv, discovery output, later Career Ops data) |
-| `docs/` | Inventories, contracts, capability matrix, risks |
-
-## Ground rules
-
-JobSpy and Career Ops are never edited in place, and Rolecraft changes land on a branch with their own tests ([docs/UPSTREAM_PATCHES.md](docs/UPSTREAM_PATCHES.md)); `npm run verify:sources` checks every checkout against its pin. No secrets or personal job-search data are committed. Nothing is ever submitted to an employer automatically.
+| `packages/job-schema` | Canonical job, provenance, screening, evaluation and decision schemas |
+| `packages/dedup`, `packages/filters`, `packages/candidate-profile` | Cross-source dedup, hard filters, the candidate profile |
+| `packages/resume-router`, `packages/tailoring` | Resume family choice; evidence-based, reorder-only tailoring |
+| `packages/rolecraft-client`, `packages/logging`, `packages/config` | Rolecraft API client, redacted logs, settings |
+| `workers/jobspy`, `adapters/jobspy` | JobSpy worker (Python) and its adapter |
+| `adapters/career-ops`, `adapters/claude-code` | Career Ops runtime (health, scan, JD fetch, profile sync, evaluation prompts); headless Claude |
+| `services/discovery`, `evaluation`, `preparation`, `scheduler` | The commands |
+| `tests/fixtures`, `tests/integration`, `tests/guards` | Sanitized fixtures, end-to-end and Rolecraft tests, source guards |
+| `docs/` | Inventories, contracts, risks, runtime, configuration, upstream policy |

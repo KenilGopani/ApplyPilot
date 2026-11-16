@@ -36,8 +36,10 @@ PRODUCT              Rolecraft: discovered-jobs inbox, applications, follow-ups
 | `adapters/jobspy` | Discovery → Normalization | done |
 | `adapters/career-ops` | Runtime (health, verify, scan) and portal postings → CanonicalJob | done (Phases 8–9); evaluation Phase 13 |
 | `packages/dedup` | Cross-source dedup: identity keys, conflicts, merges | done (Phase 10) |
-| `packages/filters` | Hard filters | Phase 11 |
-| `packages/candidate-profile` | Evaluation input | Phase 12 |
+| `packages/filters`, `packages/candidate-profile` | Hard filters and the candidate profile | done (Phases 11–12) |
+| `adapters/claude-code`, `services/evaluation` | Triage and Career Ops evaluation through the user's Claude login | done (Phase 13) |
+| `packages/resume-router`, `packages/tailoring`, `services/preparation` | Resume choice, reorder-only tailoring, application prep | done (Phases 14–18) |
+| `services/scheduler`, `packages/logging`, `packages/config` | Scheduled discovery, logs, configuration | done (Phases 21–25) |
 | `packages/rolecraft-client` | Normalization → Product (push to Rolecraft) | done |
 | `services/discovery` | Runs and merges sources, saves runs, pushes to Rolecraft (`discover --sources`, `push`, `career-ops`) | done |
 | Rolecraft `discovered_jobs` + inbox | Product | done (KenilJobBoard `feat/discovered-jobs`) |

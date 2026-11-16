@@ -128,6 +128,19 @@ Each run is deduplicated before it is pushed and every job carries `dedupKeys`. 
 - `runtime/candidate-profile.json` (`packages/candidate-profile`): identity, career, work authorization, locations, compensation and filter rules. `toFilterPolicy()` feeds the filters; `toCareerOpsAnswers()` feeds Career Ops' `onboard-write.mjs --force --only profile`.
 - Evaluation: `claude -p --tools "" --strict-mcp-config --no-session-persistence --output-format json`, run in an empty temp directory. Triage prompt = `modes/triage.md` + `modes/_brief.md` + fenced postings, answered as `#n TRIAGE: VERDICT | Company | Role | x/5 | reason`. Full prompt = `_shared.md` + `oferta.md` + `_profile.md` + `profile.yml` + `cv.md` + the fenced posting; the report's header (`Score`, `Decision`, `Work Auth`, `Evidence confidence`) and Block B table become a `CanonicalJobEvaluation`. Quotes not found in `cv.md` move a claimed match to `missing` with category `unverified-match`. Rolecraft stores it via `PUT /api/discovered-jobs/:id/evaluation`; a triage never overwrites a full evaluation. Unreadable postings get a SKIP triage without a model call.
 
+## Resume routing, tailoring and application prep (Phases 14–18)
+
+- Router (`packages/resume-router`): `core-swe` | `applied-ai` | `hybrid` from title words (×3), description words and the evaluation archetype; only families listed in the profile are recommended, with a lower confidence when falling back. Full evaluations carry `resumeRouting`.
+- Tailoring (`packages/tailoring`): recommendations each cite verbatim resume text; a tailored version only reorders the base resume's own lines and skill items, `unsupportedLines()` rejects anything else, and each version is a separate file with the base file's SHA-256 (`runtime/resume-versions/rv_*.md|json`).
+- Prep bundle (`npm run prepare-application`): resume, version, priorities, real gaps (unverified claims excluded), optional drafts with numbers not found in the resume or posting flagged, and a checklist ending in "submit it yourself". Stored via `PUT /api/discovered-jobs/:id/preparation`; display only.
+
+## Pipeline, analytics, scheduler and logs (Phases 19–24)
+
+- Rolecraft opportunities gain optional `activity[]` and `interviews[]`. `withStatusChange()` records stage changes and schedules follow-ups (Applied 7 days, Screening 5, Interview 3, Offer 2) unless a future one is set; Rejected/Withdrawn stop reminders.
+- `GET /api/analytics`: response, screen, interview and offer rates by role family, resume, source, channel (employer site vs job board) and evaluation score, plus median days to response.
+- Scheduler run record (`runtime/logs/schedule-runs.jsonl`): `search, started_at, completed_at, sources, queries, jobs_found, jobs_new, jobs_duplicate, jobs_filtered, jobs_evaluated, errors`.
+- Logs (`runtime/logs/<service>.jsonl`): one JSON object per line; discovery runs log `run_id, source, query, start, end, jobs_found, jobs_normalized, duplicates, filtered, evaluated, failures, duration_ms`. Secrets, contact details and resume/posting/draft text are redacted.
+
 ## Rolecraft native format
 
 One workspace JSON per user: `{ jobs: Job[], resume: {name, source}, weeklyGoal }`, Zod-validated, revisioned. See [rolecraft-inventory.md](rolecraft-inventory.md). Workspace jobs saved from the inbox carry `discoveredJobId`.
