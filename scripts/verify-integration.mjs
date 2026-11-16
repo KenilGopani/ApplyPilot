@@ -44,7 +44,7 @@ const proc = (r, okDetail) => ({
 });
 const tests = (globs, label) => {
   const r = run(node, [...TS, ...globs]);
-  const pass = /ℹ pass (\d+)/.exec(r.stdout)?.[1] ?? "?";
+  const pass = /(?:ℹ|#) pass (\d+)/.exec(r.stdout)?.[1] ?? "?";
   return proc(r, `${pass} ${label} passed`);
 };
 
@@ -78,7 +78,7 @@ step("Career Ops doctor runs on an isolated data root", () => {
 step("Rolecraft unit tests and typecheck", () => {
   const t = run("npm", ["test", "--silent"], rolecraft);
   if (t.status !== 0) return proc(t);
-  return proc(run("npx", ["tsc", "--noEmit"], rolecraft), `${/ℹ pass (\d+)/.exec(t.stdout)?.[1] ?? "?"} tests passed, types clean`);
+  return proc(run("npx", ["tsc", "--noEmit"], rolecraft), `${/(?:ℹ|#) pass (\d+)/.exec(t.stdout)?.[1] ?? "?"} tests passed, types clean`);
 });
 step("Platform typecheck", () => proc(run("npx", ["tsc", "--noEmit"]), "types clean"));
 step("Platform schema tests", () => tests(["packages/job-schema/test/*.test.ts"], "schema tests"));
