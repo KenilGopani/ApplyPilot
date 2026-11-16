@@ -139,6 +139,9 @@ test("triage runs in batches, then the best PASS job gets a full evaluation with
     };
     assert.deepEqual(full.matched.map((m) => m.requirement.text), ["Python APIs"]);
     assert.deepEqual(full.missing, [{ id: "r2", text: "Kafka at scale", importance: "high", jdSignal: '"Kafka"', category: "unverified-match" }]);
+    const body = rc.puts.find((p) => p.body.stage === "full")!.body as { resumeRouting: { recommended: string } };
+    assert.ok(["core-swe", "applied-ai", "hybrid"].includes(body.resumeRouting.recommended));
+    assert.equal(summary.evaluated[0]!.resume, body.resumeRouting.recommended);
     assert.match(full.evaluatorVersion, /career-ops@1\.40\.0 via claude-code \(claude-sonnet-5-5\)/);
     assert.match(readFileSync(full.nativeReport, "utf8"), /\*\*Score:\*\* 4\.4\/5/);
     assert.equal(summary.claudeCalls, 2);

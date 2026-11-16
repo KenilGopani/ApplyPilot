@@ -14,6 +14,7 @@ import {
   type JobDescriptionResult,
   type TriageResult,
 } from "@applypilot/adapter-career-ops";
+import { routeResume, type ResumeFamily } from "@applypilot/resume-router";
 import { ClaudeError, runClaude, type ClaudeOptions, type ClaudeResult } from "@applypilot/adapter-claude-code";
 import {
   getDiscoveredJob,
@@ -45,11 +46,13 @@ export interface EvaluateOptions {
   fetchDescription?: (url: string) => Promise<JobDescriptionResult>;
   now?: () => Date;
   log?: (line: string) => void;
+  /** Resume families the candidate has (from the profile); all when unknown. */
+  resumeFamilies?: ResumeFamily[];
 }
 
 export interface EvaluateSummary {
   triaged: { id: string; result: TriageResult }[];
-  evaluated: { id: string; score: number; decision: string; report: string; unverified: string[] }[];
+  evaluated: { id: string; score: number; decision: string; report: string; unverified: string[]; resume: ResumeFamily }[];
   skipped: { id: string; reason: string }[];
   failed: { id: string; reason: string }[];
   stoppedByLimit: string | null;
@@ -233,15 +236,33 @@ export async function evaluateInbox(options: EvaluateOptions = {}): Promise<Eval
           evaluatorVersion: `${ctx.version ?? "career-ops"} via claude-code${result.model ? ` (${result.model})` : ""}`,
           nativeReport: file,
         });
+        const route = routeResume(
+          { title: item.job.title, description: item.job.description, archetype: parsed.archetype ?? undefined },
+          options.resumeFamilies,
+        );
         const { jobId: _jobId, ...stored } = evaluation;
         void _jobId;
-        await putEvaluation(item.detail.id, { stage: "full", evaluation: stored }, options.rolecraft);
+        await putEvaluation(
+          item.detail.id,
+          {
+            stage: "full",
+            evaluation: { ...stored, recommendedResume: route.recommended },
+            resumeRouting: {
+              recommended: route.recommended,
+              confidence: route.confidence,
+              reason: route.reason,
+              alternative: route.alternative,
+            },
+          },
+          options.rolecraft,
+        );
         summary.evaluated.push({
           id: item.detail.id,
           score: evaluation.score,
           decision: parsed.decision,
           report: file,
           unverified: unverifiedMatches,
+          resume: route.recommended,
         });
         log(`  ${evaluation.score.toFixed(1)}/5 ${parsed.decision}${unverifiedMatches.length ? ` (${unverifiedMatches.length} unverified claim(s) moved to gaps)` : ""}`);
       } catch (error) {

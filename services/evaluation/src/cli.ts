@@ -3,6 +3,7 @@ import { parseArgs } from "node:util";
 import { CareerOpsError } from "@applypilot/adapter-career-ops";
 import { ClaudeError } from "@applypilot/adapter-claude-code";
 import { DEFAULT_ROLECRAFT_URL, RolecraftError } from "@applypilot/rolecraft-client";
+import { loadCandidateProfile } from "@applypilot/candidate-profile";
 import { evaluateInbox } from "./evaluate.ts";
 
 const USAGE = `Usage: npm run evaluate -- [options]
@@ -47,7 +48,15 @@ async function main(): Promise<number> {
     if (!Number.isInteger(n) || n < 0) throw new Error(`--${name} must be a whole number`);
     return n;
   };
+  let resumeFamilies: ("core-swe" | "applied-ai" | "hybrid")[] | undefined;
+  try {
+    const families = loadCandidateProfile().resumes.map((r) => r.family);
+    if (families.length) resumeFamilies = families;
+  } catch {
+    resumeFamilies = undefined;
+  }
   const summary = await evaluateInbox({
+    resumeFamilies,
     limit: int(values.limit, "limit"),
     triageLimit: int(values["triage-limit"], "triage-limit"),
     batchSize: int(values.batch, "batch"),

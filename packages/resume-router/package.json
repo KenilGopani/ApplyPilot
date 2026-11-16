@@ -1,0 +1,10 @@
+{
+  "name": "@applypilot/resume-router",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Picks the resume family for a job; never edits a resume.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
