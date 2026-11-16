@@ -161,6 +161,12 @@ export interface DiscoveredJobSummary {
 export interface DiscoveredJobDetail extends DiscoveredJobSummary {
   description: string | null;
   provenance: { site: string; url: string; applyUrl?: string }[];
+  /** The stored triage or full evaluation, as ApplyPilot sent it. */
+  evaluation?: {
+    stage: "triage" | "full";
+    evaluation?: { missing?: { text: string; category?: string }[]; roleClassification?: string };
+    resumeRouting?: { recommended: "core-swe" | "applied-ai" | "hybrid" };
+  } | null;
 }
 
 async function call<T>(
@@ -219,4 +225,13 @@ export async function putEvaluation(
     { ...options, method: "PUT", body: JSON.stringify(payload) },
   );
   return body.result;
+}
+
+/** Store an application preparation bundle on a discovered job. */
+export async function putPreparation(id: string, bundle: object, options: PushOptions = {}): Promise<void> {
+  await call<{ ok: boolean }>(`/api/discovered-jobs/${encodeURIComponent(id)}/preparation`, {
+    ...options,
+    method: "PUT",
+    body: JSON.stringify(bundle),
+  });
 }

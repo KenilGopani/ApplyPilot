@@ -1,0 +1,18 @@
+{
+  "name": "@applypilot/preparation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Application preparation bundles: resume choice, tailored version, priorities, gaps and optional drafts. Never submits.",
+  "type": "module",
+  "exports": {
+    ".": "./src/prepare.ts"
+  },
+  "dependencies": {
+    "@applypilot/adapter-career-ops": "0.1.0",
+    "@applypilot/adapter-claude-code": "0.1.0",
+    "@applypilot/candidate-profile": "0.1.0",
+    "@applypilot/resume-router": "0.1.0",
+    "@applypilot/rolecraft-client": "0.1.0",
+    "@applypilot/tailoring": "0.1.0"
+  }
+}

@@ -51,8 +51,22 @@ function termRe(term: string): RegExp {
   return new RegExp(`(^|[^A-Za-z0-9+#])${escape(term)}(?=$|[^A-Za-z0-9+#])`, "gi");
 }
 
+const GENERIC = new Set(["systems", "system", "search", "outputs", "calling", "datasets", "services", "data", "with", "and"]);
+
+/**
+ * Occurrences of a skill in text. A multi-word skill ("REST APIs") also counts
+ * through its distinctive words ("APIs"), so a JD's shorter wording still matches.
+ */
 function count(term: string, text: string): number {
-  return [...text.matchAll(termRe(term))].length;
+  const full = [...text.matchAll(termRe(term))].length;
+  if (full > 0 || !/\s/.test(term)) return full;
+  return Math.max(
+    0,
+    ...term
+      .split(/\s+/)
+      .filter((w) => w.length >= 4 && !GENERIC.has(w.toLowerCase()))
+      .map((w) => [...text.matchAll(termRe(w))].length),
+  );
 }
 
 /** Skills the resume lists (comma items of "**Group:** a, b, c" lines). */

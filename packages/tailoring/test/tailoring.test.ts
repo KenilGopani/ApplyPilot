@@ -85,3 +85,9 @@ test("a resume version records its base and never changes it", () => {
   assert.equal(record.baseSha256.length, 64);
   assert.ok(record.changedLines > 0);
 });
+
+test("multi-word skills match the job's shorter wording through their distinctive words", () => {
+  const resume = "## Skills\n\n- **Backend:** REST APIs, Hybrid Search\n";
+  assert.deepEqual(matchedTerms(resume, "You build APIs."), ["REST APIs"]);
+  assert.deepEqual(matchedTerms(resume, "Search the codebase."), [], "generic words alone do not match");
+});
