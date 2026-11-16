@@ -7,6 +7,7 @@
   "dependencies": {
     "@applypilot/adapter-career-ops": "0.1.0",
     "@applypilot/adapter-jobspy": "0.1.0",
+    "@applypilot/job-schema": "0.1.0",
     "@applypilot/rolecraft-client": "0.1.0"
   }
 }

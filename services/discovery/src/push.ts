@@ -3,8 +3,8 @@
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { DEFAULT_ROLECRAFT_URL, RolecraftError, pushDiscovery } from "@applypilot/rolecraft-client";
-import type { DiscoveryResult } from "@applypilot/adapter-jobspy";
-import { runInfo } from "./cli.ts";
+import type { DiscoveryResult } from "@applypilot/job-schema";
+import { runInfo } from "./pipeline.ts";
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -14,7 +14,9 @@ if (positionals.length !== 1) {
   console.error("Usage: npm run push -- <runtime/discovery/run_….json> [--rolecraft-url <url>]");
   process.exit(1);
 }
-const result = JSON.parse(readFileSync(positionals[0] as string, "utf8")) as DiscoveryResult;
+const saved = JSON.parse(readFileSync(positionals[0] as string, "utf8")) as DiscoveryResult;
+// Runs saved before the adapter field existed all came from JobSpy.
+const result: DiscoveryResult = { ...saved, adapter: saved.adapter ?? "jobspy" };
 try {
   const pushed = await pushDiscovery(runInfo(result), result.jobs, { baseUrl: values["rolecraft-url"] });
   console.log(`Rolecraft: ${pushed.created} new, ${pushed.updated} already in the inbox (run ${result.runId})`);
