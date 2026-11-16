@@ -59,11 +59,10 @@ jobs:
         run: |
           python -m venv ApplyPilot/runtime/.venv-jobspy
           ApplyPilot/runtime/.venv-jobspy/bin/pip install -e JobSpy
+      # Career Ops does not commit a lockfile; this is how its own CI installs.
       - name: Install Career Ops (no browser download)
         working-directory: career-ops
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-        run: npm ci --no-audit --no-fund
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Install Rolecraft
         working-directory: KenilJobBoard
         run: npm ci --no-audit --no-fund
