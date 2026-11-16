@@ -135,8 +135,15 @@ export function authorizationCheck(job: CanonicalJob, policy: FilterPolicy): Scr
   if (!policy.needsSponsorship) return check("work-authorization", "compatible", "You do not need sponsorship");
   if (!job.description) return check("work-authorization", "unknown", "No description to read sponsorship terms from");
   const lines = sentences(job.description);
-  const refuse = lines.find((s) => NO_SPONSOR.some((re) => re.test(s)));
-  if (refuse) return check("work-authorization", "incompatible", "The posting rules out sponsorship or requires citizenship/clearance", refuse);
+  const refusals = lines.filter((s) => NO_SPONSOR.some((re) => re.test(s)));
+  // "Clearance preferred" is a preference, not a requirement: a human decides.
+  const required = refusals.find((s) => !PREFERRED.test(s) && !/\bdesired\b/i.test(s));
+  if (required) {
+    return check("work-authorization", "incompatible", "The posting rules out sponsorship or requires citizenship/clearance", required);
+  }
+  if (refusals[0]) {
+    return check("work-authorization", "manual-review", "Citizenship or clearance is preferred, not required", refusals[0]);
+  }
   const offer = lines.find((s) => SPONSORS.some((re) => re.test(s)));
   if (offer) return check("work-authorization", "compatible", "The posting offers sponsorship", offer);
   const authorized = lines.find((s) => AUTHORIZED_ONLY.test(s));

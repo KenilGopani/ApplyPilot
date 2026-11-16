@@ -94,6 +94,11 @@ test("sponsorship is read from the posting's own words, quoted, never inferred",
   }
   assert.equal(authorizationCheck(job({ description: "Visa sponsorship is available." }), policy).status, "compatible");
   assert.equal(
+    authorizationCheck(job({ description: "US Secret Clearance preferred for defense customers." }), policy).status,
+    "manual-review",
+    "a preferred clearance is not a requirement",
+  );
+  assert.equal(
     authorizationCheck(job({ description: "You must be authorized to work in the US." }), policy).status,
     "manual-review",
   );
