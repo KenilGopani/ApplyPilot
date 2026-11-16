@@ -4,6 +4,7 @@
 // are re-deduplicated first, so re-sending older runs lets Rolecraft merge
 // them with the same postings found by other sources (jobs you have acted on
 // are never folded away). Re-sending a run is idempotent.
+import "@applypilot/config/env";
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

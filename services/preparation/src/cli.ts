@@ -1,4 +1,5 @@
 // npm run prepare-application -- --job <id> [--drafts] [--model sonnet]
+import "@applypilot/config/env";
 import { parseArgs } from "node:util";
 import { loadCandidateProfile, ProfileError } from "@applypilot/candidate-profile";
 import { DEFAULT_ROLECRAFT_URL } from "@applypilot/rolecraft-client";

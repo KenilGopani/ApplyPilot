@@ -1,6 +1,7 @@
 // npm run discover -- "applied ai engineer" --site indeed,linkedin --location "San Francisco, CA" -n 20 --push
 // npm run discover -- --sources career-ops --push
 // npm run discover -- "applied ai engineer" --sources jobspy,career-ops --push
+import "@applypilot/config/env";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";

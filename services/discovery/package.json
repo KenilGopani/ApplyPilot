@@ -8,6 +8,7 @@
     "@applypilot/adapter-career-ops": "0.1.0",
     "@applypilot/adapter-jobspy": "0.1.0",
     "@applypilot/candidate-profile": "0.1.0",
+    "@applypilot/config": "0.1.0",
     "@applypilot/dedup": "0.1.0",
     "@applypilot/filters": "0.1.0",
     "@applypilot/job-schema": "0.1.0",

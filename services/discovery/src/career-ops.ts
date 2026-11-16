@@ -1,4 +1,5 @@
 // npm run career-ops -- <init|doctor|verify|scan|capabilities> [options]
+import "@applypilot/config/env";
 import { parseArgs } from "node:util";
 import {
   CareerOpsError,

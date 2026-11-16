@@ -1,6 +1,7 @@
 import { canonicalJobSchema, type CanonicalJob } from "@applypilot/job-schema";
 
-export const DEFAULT_ROLECRAFT_URL = "http://127.0.0.1:5173";
+/** APPLYPILOT_ROLECRAFT_URL, else the local dev server. */
+export const DEFAULT_ROLECRAFT_URL = process.env.APPLYPILOT_ROLECRAFT_URL || "http://127.0.0.1:5173";
 /** Rolecraft accepts at most 200 jobs per request; smaller keeps bodies modest. */
 export const DEFAULT_BATCH_SIZE = 50;
 

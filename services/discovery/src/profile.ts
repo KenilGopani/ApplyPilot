@@ -1,4 +1,5 @@
 // npm run profile -- <show|policy|sync>
+import "@applypilot/config/env";
 import { CareerOpsError, careerOpsHealth, initCareerOpsDataRoot, resolveCareerOpsDataRoot, syncCareerOpsProfile } from "@applypilot/adapter-career-ops";
 import {
   ProfileError,

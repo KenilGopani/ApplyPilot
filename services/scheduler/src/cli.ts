@@ -1,4 +1,5 @@
 // npm run schedule -- <list|run <name>|start|log>
+import "@applypilot/config/env";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { LOG_DIR, SCHEDULE_FILE, loadSchedule, runSearch, startScheduler, type ScheduledRunRecord } from "./scheduler.ts";

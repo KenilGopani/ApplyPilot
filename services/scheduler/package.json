@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@applypilot/candidate-profile": "0.1.0",
+    "@applypilot/config": "0.1.0",
     "@applypilot/discovery": "0.1.0",
     "@applypilot/evaluation": "0.1.0",
     "@applypilot/logging": "0.1.0",

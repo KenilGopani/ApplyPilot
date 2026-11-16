@@ -1,0 +1,11 @@
+{
+  "name": "@applypilot/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Validated local configuration; loads the git-ignored .env without overriding the shell.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./env": "./src/env.ts"
+  }
+}

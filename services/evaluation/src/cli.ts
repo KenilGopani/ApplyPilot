@@ -1,4 +1,5 @@
 // npm run evaluate -- [--limit 3] [--triage-limit 24] [--job <id>] [--model sonnet] [--dry-run]
+import "@applypilot/config/env";
 import { parseArgs } from "node:util";
 import { CareerOpsError } from "@applypilot/adapter-career-ops";
 import { ClaudeError } from "@applypilot/adapter-claude-code";
