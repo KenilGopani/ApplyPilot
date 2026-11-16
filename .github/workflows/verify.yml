@@ -2,8 +2,7 @@ name: Integration verification
 
 # Checks out ApplyPilot and the three source repositories at the exact
 # commits in sources.lock.json, then runs npm run verify:integration.
-# KenilJobBoard is private: add a repository secret SOURCES_TOKEN (a
-# fine-grained token with read access to KenilGopani/KenilJobBoard).
+# All three sources are public, so no token or secret is needed.
 
 on:
   pull_request:
@@ -47,7 +46,6 @@ jobs:
           repository: KenilGopani/KenilJobBoard
           ref: ${{ steps.pins.outputs.rolecraft }}
           path: KenilJobBoard
-          token: ${{ secrets.SOURCES_TOKEN }}
           persist-credentials: false
 
       - uses: actions/setup-node@v4
