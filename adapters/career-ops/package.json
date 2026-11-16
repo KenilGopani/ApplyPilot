@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@applypilot/job-schema": "0.1.0",
     "zod": "3.25.76"
   }
 }
