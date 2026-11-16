@@ -1,0 +1,27 @@
+{
+  "name": "applypilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first job discovery, evaluation and application tracking built on JobSpy, Career Ops and Rolecraft.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "adapters/*"
+  ],
+  "scripts": {
+    "test": "node --experimental-strip-types --test \"packages/*/test/*.test.ts\" \"adapters/*/test/*.test.ts\" \"tests/**/*.test.ts\"",
+    "test:python": "node scripts/run-jobspy-python.mjs -m unittest discover -s workers/jobspy/tests",
+    "typecheck": "tsc --noEmit",
+    "verify:sources": "node scripts/verify-sources.mjs",
+    "verify": "npm run verify:sources && npm run typecheck && npm test && npm run test:python",
+    "setup:jobspy": "node scripts/setup-jobspy.mjs",
+    "discover": "node --experimental-strip-types adapters/jobspy/src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "typescript": "5.9.3"
+  }
+}

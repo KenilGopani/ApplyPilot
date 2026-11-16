@@ -1,0 +1,24 @@
+# Dependencies and tool state
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# Local runtime data: discovery output, caches, logs, Career Ops data root.
+# Everything here is personal or generated and never committed.
+runtime/*
+!runtime/README.md
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+
+# Build output
+dist/
+coverage/
+*.tsbuildinfo
+
+# OS metadata
+.DS_Store
