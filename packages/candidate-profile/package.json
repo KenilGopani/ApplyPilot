@@ -1,0 +1,17 @@
+{
+  "name": "@applypilot/candidate-profile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The canonical candidate profile: drives hard filters and syncs into Career Ops.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@applypilot/filters": "0.1.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@applypilot/adapter-career-ops": "0.1.0"
+  }
+}

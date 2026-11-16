@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "identity": {
+    "fullName": "Alex Example",
+    "email": "alex@example.com",
+    "github": "github.com/alex-example",
+    "city": "Austin",
+    "region": "TX",
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  "career": {
+    "level": "early-career",
+    "yearsOfExperience": 2,
+    "targetRoles": ["Applied AI Engineer", "Backend Software Engineer"],
+    "roleFamilies": [
+      { "name": "Applied AI / LLM Engineer", "fit": "primary" },
+      { "name": "Backend Software Engineer", "fit": "secondary" }
+    ],
+    "skills": ["Python", "FastAPI", "PostgreSQL", "RAG"]
+  },
+  "resumes": [],
+  "workAuthorization": { "status": "US citizen", "needsSponsorship": false, "authorizedIn": ["United States"] },
+  "locations": { "countries": ["United States"], "cities": [], "remote": true, "relocation": true },
+  "compensation": { "currency": "USD", "minimum": 110000, "targetMin": 110000, "targetMax": 150000 },
+  "filters": {
+    "maxPostingAgeDays": 45,
+    "excludedTitleKeywords": ["Staff", "Principal", "Director", "Manager", "Head", "VP"],
+    "reviewTitleKeywords": ["Senior", "Sr", "Lead"],
+    "roleFamilyKeywords": ["Engineer", "Engineering", "Developer", "Scientist", "Architect", "SWE", "SDE", "Programmer"],
+    "maxRequiredYears": 4,
+    "reviewRequiredYears": 2,
+    "excludedCompanies": [],
+    "excludedKeywords": []
+  },
+  "preferredCompanies": [],
+  "spendTier": "standard"
+}
