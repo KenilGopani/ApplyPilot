@@ -25,7 +25,8 @@
     "career-ops": "node --experimental-strip-types services/discovery/src/career-ops.ts",
     "profile": "node --experimental-strip-types services/discovery/src/profile.ts",
     "evaluate": "node --experimental-strip-types services/evaluation/src/cli.ts",
-    "prepare-application": "node --experimental-strip-types services/preparation/src/cli.ts"
+    "prepare-application": "node --experimental-strip-types services/preparation/src/cli.ts",
+    "schedule": "node --experimental-strip-types services/scheduler/src/cli.ts"
   },
   "devDependencies": {
     "@types/node": "22.19.19",

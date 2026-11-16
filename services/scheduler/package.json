@@ -1,0 +1,17 @@
+{
+  "name": "@applypilot/scheduler",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local scheduled discovery runs with a run log. Never changes application decisions.",
+  "type": "module",
+  "exports": {
+    ".": "./src/scheduler.ts"
+  },
+  "dependencies": {
+    "@applypilot/candidate-profile": "0.1.0",
+    "@applypilot/discovery": "0.1.0",
+    "@applypilot/evaluation": "0.1.0",
+    "@applypilot/rolecraft-client": "0.1.0",
+    "zod": "3.25.76"
+  }
+}

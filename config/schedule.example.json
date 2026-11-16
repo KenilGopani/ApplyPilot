@@ -1,0 +1,25 @@
+{
+  "searches": [
+    {
+      "name": "morning",
+      "at": "08:30",
+      "sources": ["jobspy", "career-ops"],
+      "query": "applied ai engineer",
+      "sites": ["indeed", "linkedin"],
+      "location": "United States",
+      "results": 20,
+      "hoursOld": 24,
+      "triageLimit": 0
+    },
+    {
+      "name": "afternoon",
+      "at": "15:00",
+      "sources": ["jobspy"],
+      "query": "backend software engineer",
+      "sites": ["indeed", "linkedin"],
+      "results": 15,
+      "hoursOld": 8,
+      "triageLimit": 0
+    }
+  ]
+}

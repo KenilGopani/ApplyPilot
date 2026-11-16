@@ -12,5 +12,8 @@
     "@applypilot/filters": "0.1.0",
     "@applypilot/job-schema": "0.1.0",
     "@applypilot/rolecraft-client": "0.1.0"
+  },
+  "exports": {
+    ".": "./src/pipeline.ts"
   }
 }
