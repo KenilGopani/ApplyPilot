@@ -1,0 +1,15 @@
+{
+  "name": "@applypilot/evaluation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Triage and Career Ops evaluation of inbox jobs through the user's own Claude Code login.",
+  "type": "module",
+  "exports": {
+    ".": "./src/evaluate.ts"
+  },
+  "dependencies": {
+    "@applypilot/adapter-career-ops": "0.1.0",
+    "@applypilot/adapter-claude-code": "0.1.0",
+    "@applypilot/rolecraft-client": "0.1.0"
+  }
+}

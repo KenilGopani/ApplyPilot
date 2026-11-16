@@ -138,3 +138,85 @@ export async function pushDiscovery(
   }
   return total;
 }
+
+// ------------------------------------------------------------ reading back
+
+/** The inbox row Rolecraft returns (subset ApplyPilot uses). */
+export interface DiscoveredJobSummary {
+  id: string;
+  status: string;
+  title: string;
+  company: string;
+  location: string | null;
+  sourceUrl: string;
+  postedAt: string | null;
+  sites: string[];
+  screeningVerdict: "pass" | "review" | "reject" | null;
+  authorization: string | null;
+  evaluationStage: "triage" | "full" | null;
+  evaluationScore: number | null;
+  evaluationDecision: string | null;
+}
+
+export interface DiscoveredJobDetail extends DiscoveredJobSummary {
+  description: string | null;
+  provenance: { site: string; url: string; applyUrl?: string }[];
+}
+
+async function call<T>(
+  path: string,
+  init: RequestInit & { baseUrl?: string; fetch?: typeof fetch } = {},
+): Promise<T> {
+  const base = resolveRolecraftUrl(init.baseUrl);
+  const doFetch = init.fetch ?? fetch;
+  let response: Response;
+  try {
+    response = await doFetch(new URL(path, base), {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "__sites_local_auth=1",
+        Origin: base.origin,
+        ...(init.headers as Record<string, string> | undefined),
+      },
+    });
+  } catch (error) {
+    throw new RolecraftError(`cannot reach Rolecraft at ${base.origin}: ${(error as Error).message}`, null, 0);
+  }
+  const body = (await response.json().catch(() => ({}))) as T & { error?: string; issues?: string[] };
+  if (!response.ok) {
+    const detail = [body.error, ...(body.issues ?? []).slice(0, 3)].filter(Boolean).join("; ");
+    throw new RolecraftError(`Rolecraft ${path} failed (HTTP ${response.status}): ${detail}`, response.status, 0);
+  }
+  return body;
+}
+
+/** Inbox jobs with a status, optionally only those the hard filters kept. */
+export async function listDiscoveredJobs(
+  query: { status?: string; screening?: "kept" | "rejected" },
+  options: PushOptions = {},
+): Promise<DiscoveredJobSummary[]> {
+  const params = new URLSearchParams({ limit: "500" });
+  if (query.status) params.set("status", query.status);
+  if (query.screening) params.set("screening", query.screening);
+  const body = await call<{ jobs: DiscoveredJobSummary[] }>(`/api/discovered-jobs?${params}`, options);
+  return body.jobs;
+}
+
+export async function getDiscoveredJob(id: string, options: PushOptions = {}): Promise<DiscoveredJobDetail> {
+  const body = await call<{ job: DiscoveredJobDetail }>(`/api/discovered-jobs/${encodeURIComponent(id)}`, options);
+  return body.job;
+}
+
+/** Store a triage line or a full evaluation on a discovered job. */
+export async function putEvaluation(
+  id: string,
+  payload: object,
+  options: PushOptions = {},
+): Promise<"stored" | "kept-full"> {
+  const body = await call<{ result: "stored" | "kept-full" }>(
+    `/api/discovered-jobs/${encodeURIComponent(id)}/evaluation`,
+    { ...options, method: "PUT", body: JSON.stringify(payload) },
+  );
+  return body.result;
+}

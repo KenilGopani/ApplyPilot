@@ -23,7 +23,8 @@
     "test:integration": "node --experimental-strip-types --test \"tests/integration/*.test.ts\"",
     "push": "node --experimental-strip-types services/discovery/src/push.ts",
     "career-ops": "node --experimental-strip-types services/discovery/src/career-ops.ts",
-    "profile": "node --experimental-strip-types services/discovery/src/profile.ts"
+    "profile": "node --experimental-strip-types services/discovery/src/profile.ts",
+    "evaluate": "node --experimental-strip-types services/evaluation/src/cli.ts"
   },
   "devDependencies": {
     "@types/node": "22.19.19",
