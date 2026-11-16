@@ -1,0 +1,10 @@
+{
+  "name": "@applypilot/tailoring",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Evidence-based resume tailoring: recommendations and reorder-only resume versions; never new claims.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
