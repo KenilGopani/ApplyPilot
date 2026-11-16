@@ -158,7 +158,24 @@ export async function evaluateInbox(options: EvaluateOptions = {}): Promise<Eval
         const ready: { detail: DiscoveredJobDetail; job: JobForEvaluation }[] = [];
         for (const row of toTriage.slice(i, i + batchSize)) {
           const item = await withDescription(row);
-          if (item) ready.push(item);
+          if (item) {
+            ready.push(item);
+            continue;
+          }
+          // Record why, as Career Ops' own SKIP verdict, so later runs do not
+          // pick the same unreadable posting again. No model call is made.
+          await putEvaluation(
+            row.id,
+            {
+              stage: "triage",
+              evaluator: "applypilot (no model call)",
+              evaluatedAt: now().toISOString(),
+              verdict: "SKIP",
+              score: 0,
+              reason: summary.skipped[summary.skipped.length - 1]?.reason ?? "posting not readable",
+            },
+            options.rolecraft,
+          );
         }
         if (ready.length === 0) continue;
         log(`triage: ${ready.length} job(s)…`);

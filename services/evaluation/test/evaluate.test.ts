@@ -125,6 +125,8 @@ test("triage runs in batches, then the best PASS job gets a full evaluation with
     });
     assert.equal(prompts.filter((p) => p.includes("triage worker")).length, 1, "two jobs in one batch call");
     assert.deepEqual(summary.skipped.map((s) => [s.id.slice(-2), s.reason]), [["13", "no job description available"]]);
+    const skip = rc.puts.find((p) => p.id === "job_0000000000000013")?.body;
+    assert.equal(skip?.verdict, "SKIP", "an unreadable posting is marked so it is not retried");
     assert.equal(summary.triaged.length, 2);
     assert.equal(summary.evaluated.length, 1, "limit 1");
     assert.equal(summary.evaluated[0]!.id, "job_0000000000000012", "highest triage score first");

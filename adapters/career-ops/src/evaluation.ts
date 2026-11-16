@@ -331,6 +331,7 @@ export function toCanonicalEvaluation(
   ]
     .filter(Boolean)
     .join(" ")
+    .replace(/\*\*/g, "")
     .slice(0, 20_000);
   const evaluation = canonicalJobEvaluationSchema.parse({
     jobId,
