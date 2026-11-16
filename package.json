@@ -29,7 +29,8 @@
     "schedule": "node --experimental-strip-types services/scheduler/src/cli.ts",
     "config:check": "node --experimental-strip-types packages/config/src/cli.ts",
     "verify:integration": "node scripts/verify-integration.mjs",
-    "dev": "node scripts/dev.mjs"
+    "dev": "node scripts/dev.mjs",
+    "sources:check-updates": "node scripts/check-upstream.mjs"
   },
   "devDependencies": {
     "@types/node": "22.19.19",
