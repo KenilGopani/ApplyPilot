@@ -9,7 +9,7 @@ Policy (plan Phase 28): before changing JobSpy, Career Ops or Rolecraft source t
 5. run that repository's tests and `npm run verify` here,
 6. record it below and update `sources.lock.json`.
 
-`npm run verify:sources` fails whenever a source checkout is off its pin or has modified tracked files, so an unrecorded patch cannot go unnoticed.
+`npm run verify:sources` fails whenever a source checkout is off its pin or has modified tracked files, so an unrecorded patch cannot go unnoticed; `tests/guards/source-preservation.test.ts` proves the guard catches both. Updating a pin follows [UPSTREAM_UPDATES.md](UPSTREAM_UPDATES.md).
 
 ## Log
 

@@ -12,7 +12,8 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const sourcesDir = resolve(root, process.env.APPLYPILOT_SOURCES_DIR || "..");
-const { sources } = JSON.parse(readFileSync(join(root, "sources.lock.json"), "utf8"));
+const lockFile = resolve(root, process.env.APPLYPILOT_SOURCES_LOCK || "sources.lock.json");
+const { sources } = JSON.parse(readFileSync(lockFile, "utf8"));
 const warnOnly = process.argv.includes("--warn");
 
 const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
