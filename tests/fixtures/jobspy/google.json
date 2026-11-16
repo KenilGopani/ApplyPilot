@@ -1,0 +1,13 @@
+[
+  {
+    "id": "go-AbCdEf0123",
+    "site": "google",
+    "job_url": "https://www.google.com/search?q=ai+engineer&udm=8#vhid=AbCdEf0123",
+    "title": "Machine Learning Engineer",
+    "company": "Wide World Importers",
+    "location": "New York, NY, USA",
+    "date_posted": "2026-11-09",
+    "is_remote": false,
+    "description": "Work on retrieval and ranking."
+  }
+]

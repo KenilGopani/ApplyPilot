@@ -1,0 +1,13 @@
+[
+  {
+    "id": "hw-60000001",
+    "site": "hellowork",
+    "job_url": "https://www.hellowork.com/fr-fr/emplois/60000001.html",
+    "title": "Ingénieur IA générative",
+    "company": "Woodgrove",
+    "location": "Lyon, France",
+    "date_posted": "2026-11-13",
+    "is_remote": false,
+    "description": "Concevoir des agents LLM."
+  }
+]

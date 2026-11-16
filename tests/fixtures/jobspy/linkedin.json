@@ -1,0 +1,28 @@
+[
+  {
+    "id": "li-4000000001",
+    "site": "linkedin",
+    "job_url": "https://www.linkedin.com/jobs/view/4000000001",
+    "job_url_direct": "https://boards.greenhouse.io/examplelabs/jobs/7001",
+    "title": "Software Engineer, Applied AI",
+    "company": "Example Labs",
+    "location": "San Francisco, CA, USA",
+    "date_posted": "2026-11-14",
+    "job_type": "fulltime",
+    "is_remote": false,
+    "job_level": "Entry level",
+    "description": "## About the role\n\nBuild production LLM features: RAG pipelines, tool-calling agents and evaluation harnesses. Python, FastAPI, Postgres.\n\n**Requirements**\n\n* 2+ years building backend services\n* Experience with LLM APIs",
+    "company_industry": "Software Development",
+    "company_url": "https://www.linkedin.com/company/example-labs"
+  },
+  {
+    "id": "li-4000000002",
+    "site": "linkedin",
+    "job_url": "https://www.linkedin.com/jobs/view/4000000002",
+    "title": "Backend Engineer (Remote)",
+    "company": "Northwind Data",
+    "location": "USA",
+    "date_posted": "2026-11-13",
+    "is_remote": true
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "gd-1009000000001",
+    "site": "glassdoor",
+    "job_url": "https://www.glassdoor.com/job-listing/j?jl=1009000000001",
+    "title": "Full-Stack AI Engineer",
+    "company": "Fabrikam",
+    "location": "Seattle, WA, USA",
+    "date_posted": "2026-11-10",
+    "salary_source": "direct_data",
+    "interval": "hourly",
+    "min_amount": 70.0,
+    "max_amount": 85.0,
+    "currency": "USD",
+    "is_remote": true,
+    "description": "## About the role\n\nBuild production LLM features: RAG pipelines, tool-calling agents and evaluation harnesses. Python, FastAPI, Postgres.\n\n**Requirements**\n\n* 2+ years building backend services\n* Experience with LLM APIs",
+    "company_rating": 4.1,
+    "company_reviews_count": 212
+  }
+]

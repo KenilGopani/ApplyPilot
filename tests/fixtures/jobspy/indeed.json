@@ -1,0 +1,22 @@
+[
+  {
+    "id": "in-5e409e577046abcd",
+    "site": "indeed",
+    "job_url": "https://www.indeed.com/viewjob?jk=5e409e577046abcd",
+    "job_url_direct": "https://careers.contoso.example/jobs/123",
+    "title": "GenAI Engineer",
+    "company": "Contoso Analytics",
+    "location": "Austin, TX, USA",
+    "date_posted": "2026-11-12",
+    "job_type": "fulltime, contract",
+    "salary_source": "direct_data",
+    "interval": "yearly",
+    "min_amount": 140000.0,
+    "max_amount": 180000.0,
+    "currency": "USD",
+    "is_remote": false,
+    "emails": "jobs@contoso.example",
+    "description": "## About the role\n\nBuild production LLM features: RAG pipelines, tool-calling agents and evaluation harnesses. Python, FastAPI, Postgres.\n\n**Requirements**\n\n* 2+ years building backend services\n* Experience with LLM APIs",
+    "company_num_employees": "201 to 500"
+  }
+]
