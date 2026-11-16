@@ -15,7 +15,8 @@ Each engine runs unmodified behind an adapter that translates its output into on
 | 1. Baseline: pins, inventories, capability matrix | done |
 | 2. JobSpy → CanonicalJob → Rolecraft | done: discovered jobs land in Rolecraft's Discovered inbox |
 | 3. Multi-source discovery | done: JobSpy boards + Career Ops company portals land in Rolecraft, deduplicated across sources |
-| 4–6. Hard filters, evaluation, workspace, analytics | not started (Phase 11 next) |
+| 4. Intelligent evaluation | Hard filters, candidate profile and Career Ops evaluation through your Claude login done; resume routing next |
+| 5–6. Application workspace, analytics, scheduling | not started |
 
 ## Setup
 
@@ -81,6 +82,18 @@ npm run career-ops -- capabilities   # which Career Ops operations ApplyPilot ex
 
 A scan needs `cv.md`, `config/profile.yml` and `portals.yml` in the data folder (Career Ops' format). `npm run discover -- --sources career-ops --push` brings its postings into Rolecraft.
 
+## Filters, profile and evaluation
+
+Your profile lives in `runtime/candidate-profile.json` (git-ignored; start from `config/candidate-profile.example.json`). It drives the hard filters that every `discover` and `push` run applies, for free: location, posting age, title level, required years, salary floor, excluded companies and keywords, and sponsorship read only from the posting's own words. Rejected jobs move to Rolecraft's **Filtered out** tab with the reason.
+
+```bash
+npm run profile -- show     # check the profile
+npm run profile -- sync     # write Career Ops' config/profile.yml from it
+npm run evaluate -- --limit 3
+```
+
+`evaluate` runs Career Ops' own prompts through your `claude` CLI login (a Claude Pro subscription works; no API key), with no tools: a cheap batched quick check, then a full A–G evaluation of the best jobs that pass, capped per run. A full evaluation costs roughly 65K input / 13K output tokens, so a Pro usage window covers a handful. Scores, decisions and CV-quoted matches appear in the inbox (sort by **Best match**); a matched skill counts only when its quote is really in your `cv.md`. Reports are saved to `runtime/evaluations/`.
+
 ## Layout
 
 | Path | Purpose |
@@ -90,6 +103,9 @@ A scan needs `cv.md`, `config/profile.yml` and `portals.yml` in the data folder 
 | `adapters/jobspy` | Runs the worker and maps JobSpy rows to `CanonicalJob` |
 | `adapters/career-ops` | Runs Career Ops scripts (health, verify, scan) against the isolated data folder |
 | `packages/dedup` | Cross-source deduplication: identity keys, conflict rules, provenance-preserving merges |
+| `packages/filters`, `packages/candidate-profile` | Hard filters and the canonical candidate profile |
+| `adapters/claude-code` | Headless `claude -p` with no tools, on your own login |
+| `services/evaluation` | `npm run evaluate`: triage then Career Ops evaluation |
 | `packages/rolecraft-client` | Pushes canonical jobs to a local Rolecraft in batches (loopback only) |
 | `services/discovery` | The `discover`, `push` and `career-ops` commands |
 | `tests/integration` | Fixture jobs → Rolecraft round trip (`ROLECRAFT_URL=http://127.0.0.1:5173 npm run test:integration`) |

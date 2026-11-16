@@ -122,6 +122,12 @@ Merging keeps every sighting in `provenance`. The primary record is the employer
 
 Each run is deduplicated before it is pushed and every job carries `dedupKeys`. Rolecraft stores the keys (`discovered_job_keys`) and merges an import into a stored job that shares a key (strongest kind wins, conflicts excluded). A job you acted on (status changed or promoted) always survives a merge; two acted-on jobs are never merged. Import responses include `merged`. `npm run push -- --all` re-sends every saved run with keys; it is idempotent.
 
+## Screening, profile and evaluation (Phases 11–13)
+
+- `CanonicalScreening` on each job: `verdict` pass | review | reject, `authorization`, and `checks[]` (`rule`, `status` compatible | incompatible | unknown | manual-review, `reason`, verbatim `evidence`). Unknown never rejects.
+- `runtime/candidate-profile.json` (`packages/candidate-profile`): identity, career, work authorization, locations, compensation and filter rules. `toFilterPolicy()` feeds the filters; `toCareerOpsAnswers()` feeds Career Ops' `onboard-write.mjs --force --only profile`.
+- Evaluation: `claude -p --tools "" --strict-mcp-config --no-session-persistence --output-format json`, run in an empty temp directory. Triage prompt = `modes/triage.md` + `modes/_brief.md` + fenced postings, answered as `#n TRIAGE: VERDICT | Company | Role | x/5 | reason`. Full prompt = `_shared.md` + `oferta.md` + `_profile.md` + `profile.yml` + `cv.md` + the fenced posting; the report's header (`Score`, `Decision`, `Work Auth`, `Evidence confidence`) and Block B table become a `CanonicalJobEvaluation`. Quotes not found in `cv.md` move a claimed match to `missing` with category `unverified-match`. Rolecraft stores it via `PUT /api/discovered-jobs/:id/evaluation`; a triage never overwrites a full evaluation. Unreadable postings get a SKIP triage without a model call.
+
 ## Rolecraft native format
 
 One workspace JSON per user: `{ jobs: Job[], resume: {name, source}, weeklyGoal }`, Zod-validated, revisioned. See [rolecraft-inventory.md](rolecraft-inventory.md). Workspace jobs saved from the inbox carry `discoveredJobId`.
